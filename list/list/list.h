@@ -103,34 +103,6 @@ void List<T>::Delete(int index)
     }
 }
 
-//template <typename T>
-//void List<T>::Delete(int index)
-//{
-//    if (index >= this->Count)
-//        throw logic_error("Index out of the range");
-//    else
-//    {
-//        Node* temp_node;
-//        if (index == 0)
-//        {
-//            temp_node = this->head;
-//            this->head = this->head->next;
-//        }
-//        else
-//        {
-//            int counter = 0;
-//            Node* node = this->head;
-//            while (counter++ != index - 1)
-//                node = node->next;
-//            temp_node = node->next;
-//            if (node->next != NULL)
-//                node->next = node->next->next;
-//            this->Count--;
-//        }
-//        delete temp_node;
-//    }
-//}
-
 template <typename T>
 void List<T>::Clear()
 {
