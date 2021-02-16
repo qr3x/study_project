@@ -128,9 +128,6 @@ T& List<T>::operator[](const int index)
         throw logic_error("Index out of the range");
     else
     {
-        //if (index == Count - 1)
-        //    return this->tail->value;
-
         int counter = 0;
         Node* node = this->head;
         while (counter++ != index)
