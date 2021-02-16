@@ -1,5 +1,5 @@
 #pragma once
-# include <iostream>>
+#include <iostream>
 
 using namespace std;
 
@@ -11,31 +11,31 @@ private:
     class Node
     {
     public:
-        T value;    // значение элемента
-        Node* next; // следующий элемент
+        T value;    // Г§Г­Г Г·ГҐГ­ГЁГҐ ГЅГ«ГҐГ¬ГҐГ­ГІГ 
+        Node* next; // Г±Г«ГҐГ¤ГіГѕГ№ГЁГ© ГЅГ«ГҐГ¬ГҐГ­ГІ
         Node(T value, Node* next)
         {
             this->value = value;
             this->next = next;
         }
     };
-    Node* head;       // верхний элемент спиcка
-    Node* tail;       // нижний элемент списка
-    static int Count; // количество элементов списка
+    Node* head;       // ГўГҐГ°ГµГ­ГЁГ© ГЅГ«ГҐГ¬ГҐГ­ГІ Г±ГЇГЁcГЄГ 
+    Node* tail;       // Г­ГЁГ¦Г­ГЁГ© ГЅГ«ГҐГ¬ГҐГ­ГІ Г±ГЇГЁГ±ГЄГ 
+    static int Count; // ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЅГ«ГҐГ¬ГҐГ­ГІГ®Гў Г±ГЇГЁГ±ГЄГ 
 
 public:
-    List();                         // конструктор
-    ~List();                        // деструктор
-    List(const List& list);         // конструктор копирование
+    List();                         // ГЄГ®Г­Г±ГІГ°ГіГЄГІГ®Г°
+    ~List();                        // Г¤ГҐГ±ГІГ°ГіГЄГІГ®Г°
+    List(const List& list);         // ГЄГ®Г­Г±ГІГ°ГіГЄГІГ®Г° ГЄГ®ГЇГЁГ°Г®ГўГ Г­ГЁГҐ
 
-    T& operator[](const int index); // оператор индексации
+    T& operator[](const int index); // Г®ГЇГҐГ°Г ГІГ®Г° ГЁГ­Г¤ГҐГЄГ±Г Г¶ГЁГЁ
 
-    int GetCount();                 // количество элементов
-    void Add(T value);              // добавление элемента (в конец списка)
-    void Delete(int index);         // удаление элемента по индексу
-    void Clear();                   // очистка списка
+    int GetCount();                 // ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЅГ«ГҐГ¬ГҐГ­ГІГ®Гў
+    void Add(T value);              // Г¤Г®ГЎГ ГўГ«ГҐГ­ГЁГҐ ГЅГ«ГҐГ¬ГҐГ­ГІГ  (Гў ГЄГ®Г­ГҐГ¶ Г±ГЇГЁГ±ГЄГ )
+    void Delete(int index);         // ГіГ¤Г Г«ГҐГ­ГЁГҐ ГЅГ«ГҐГ¬ГҐГ­ГІГ  ГЇГ® ГЁГ­Г¤ГҐГЄГ±Гі
+    void Clear();                   // Г®Г·ГЁГ±ГІГЄГ  Г±ГЇГЁГ±ГЄГ 
 
-    void Print();                   // вывод элементов на экран
+    void Print();                   // ГўГ»ГўГ®Г¤ ГЅГ«ГҐГ¬ГҐГ­ГІГ®Гў Г­Г  ГЅГЄГ°Г Г­
 };
 
 template <typename T>
