@@ -34,6 +34,7 @@ void romanToArabic()
     roman rom;
     arabic arab;
 
+    cout << "Доступные цифры: I, V, X, L, C, D, M - то есть от 1 до 3999" << endl;
     cout << "Введите римское число: ";
     cin >> rom;
 
