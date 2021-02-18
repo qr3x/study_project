@@ -1,13 +1,12 @@
 #include<map>
 #include "roman.h"
 
-
-arabic Convertor::toArabic(roman& t)
+arabic functionalToArabic(string& str)
 {
 	/* Система перевода римских цифр в арабские:
 	Берем поочередно пары римских цифр (сначала 1 цифра и 2, потом 2 и 3 и тд (последний символ не берем)).
 	Если левая цифра меньше правой,	то вычитаем её, если больше, то прибавляем.
-	В конце просто прибавляем последнюю цифру и суммируем с нашим результатом*/
+	В конце просто прибавляем последнюю цифру и суммируем с нашим результатом */
 
 	map<char, int> roman_arabic;
 	roman_arabic['I'] = 1;
@@ -19,69 +18,45 @@ arabic Convertor::toArabic(roman& t)
 	roman_arabic['M'] = 1000;
 
 	int result = 0;
-	for (int i = 0; i < t.value.size() - 1; i++)
+	for (int i = 0; i < str.size() - 1; i++)
 	{
-		int left_symbol = roman_arabic[t.value[i]];
-		if (left_symbol < roman_arabic[t.value[i + 1]])
+		int left_symbol = roman_arabic[str[i]];
+		if (left_symbol < roman_arabic[str[i + 1]])
 			result -= left_symbol;
 		else
 			result += left_symbol;
 	}
-	result += roman_arabic[t.value[t.value.size() - 1]];
+	result += roman_arabic[str[str.size() - 1]];
 
 	return arabic(result);
 }
 
-arabic Convertor::toArabic(string& t)
+arabic Convertor::toArabic(roman& t)
 {
-	/* Система перевода римских цифр в арабские:
-	Берем поочередно пары римских цифр (сначала 1 цифра и 2, потом 2 и 3 и тд (последний символ не берем)).
-	Если левая цифра меньше правой,	то вычитаем её, если больше, то прибавляем.
-	В конце просто прибавляем последнюю цифру и суммируем с нашим результатом*/
+	string str = t.value;	
 
-	map<char, int> roman_arabic;
-	roman_arabic['I'] = 1;
-	roman_arabic['V'] = 5;
-	roman_arabic['X'] = 10;
-	roman_arabic['L'] = 50;
-	roman_arabic['C'] = 100;
-	roman_arabic['D'] = 500;
-	roman_arabic['M'] = 1000;
+	return functionalToArabic(str);
+}
 
-	int result = 0;
-	for (int i = 0; i < t.size() - 1; i++)
-	{
-		int left_symbol = roman_arabic[t[i]];
-		if (left_symbol < roman_arabic[t[i + 1]])
-			result -= left_symbol;
-		else
-			result += left_symbol;
-	}
-	result += roman_arabic[t[t.size() - 1]];
-
-	return arabic(result);
+arabic Convertor::toArabic(string& str)
+{
+	return functionalToArabic(str);
 }
 
 
 string convert(int range, int val)
 {
-	map<int, char> orderOfRomeNumbers;
-	orderOfRomeNumbers[0] = 'I';
-	orderOfRomeNumbers[1] = 'V';
-	orderOfRomeNumbers[2] = 'X';
-	orderOfRomeNumbers[3] = 'L';
-	orderOfRomeNumbers[4] = 'C';
-	orderOfRomeNumbers[5] = 'D';
-	orderOfRomeNumbers[6] = 'M';
-
-	map<char, int> roman_arabic;
-	roman_arabic['I'] = 1;     // Можно использовать 3 раза
-	roman_arabic['V'] = 5;     // Нельзя повторять
-	roman_arabic['X'] = 10;    // Можно использовать 3 раза
-	roman_arabic['L'] = 50;    // Нельзя повторять
-	roman_arabic['C'] = 100;   // Можно использовать 3 раза
-	roman_arabic['D'] = 500;   // Нельзя повторять
-	roman_arabic['M'] = 1000;  // Можно использовать 3 раза
+	/* Используем три области (такие, чтобы крайние могли повторяться 3 раза,
+	а средние не могли повторяться:
+	1. I, V, X - 1, 5, 10
+	2. X, L, C - 10, 50, 100
+	3. C, D, M - 100, 500, 1000
+	*/
+	/*
+	:int range: область 1, 2 или 3
+	:int val: значение, с которым сейчас работаем (число от 1 до 3999)
+	:return: готовая строка для нашего val
+	*/
 
 	string romanStr("");
 	int mod;
@@ -90,8 +65,9 @@ string convert(int range, int val)
 	case 1:
 		switch (val)
 		{
-		// Если мы передаем из других range (2 или 3)
-		// Из toRoman 0 не сможет сюда передаться 
+		// Чтобы при передача не возникало ошибок,
+		// тк может передаться 0 в случае, если val = 100
+		// Из functionalToRoman 0 не может сюда передаться
 		case 0:
 			romanStr += "";
 			break;
@@ -131,8 +107,9 @@ string convert(int range, int val)
 		mod = val / 10;
 		switch (mod)
 		{
-		// Если мы передаем из других range (3)
-		// Из toRoman 0 не сможет сюда передаться
+		// Чтобы при передача не возникало ошибок,
+		// тк может передаться 0 в случае, если val = 1000
+		// Из functionalToRoman 0 не может сюда передаться
 		case 0:
 			romanStr += "";
 			break;
@@ -174,7 +151,7 @@ string convert(int range, int val)
 		switch (mod)
 		{
 		// Чтобы, если изначально было число большее 1000, при передача не возникало ошибок,
-		// тк может передаться 0
+		// тк может передаться 0 в случаях, если val = 2000, или 3000, или 4000
 		case 0:
 			romanStr += "";
 			break;
@@ -216,7 +193,7 @@ string convert(int range, int val)
 	return romanStr;
 }
 
-roman Convertor::toRoman(arabic& t)
+roman functionalToRoman(int val)
 {
 	/* Если число меньше 1000, тогда:
 	рекурсивно заполняем строку с помощью функции convert()
@@ -224,18 +201,16 @@ roman Convertor::toRoman(arabic& t)
 	определяем сколько M нужно подставить вначале строки, а остальные цифры вставляем
 	с помощью функции convert() */
 
-	int val = t.value;
-	
 	if (val <= 0 || val > 3999)
 		throw logic_error("Invalid number: the number should be > 0 and < 3900");
-	
+
 	if (val <= 10)
 		return roman(convert(1, val));
 	else if (val <= 100)
 		return roman(convert(2, val));
 	else if (val <= 1000)
 		return roman(convert(3, val));
-	
+
 	string beginStr("");
 	if (val < 2000)
 		beginStr += "M";
@@ -248,34 +223,14 @@ roman Convertor::toRoman(arabic& t)
 	return roman(beginStr);
 }
 
-roman Convertor::toRoman(int& t)
+roman Convertor::toRoman(arabic& t)
 {
-	/* Если число меньше 1000, тогда:
-	рекурсивно заполняем строку с помощью функции convert()
-	Eсли больше, тогда:
-	определяем сколько M нужно подставить вначале строки, а остальные цифры вставляем
-	с помощью функции convert() */
+	int val = t.value;
 
-	int val = t;
+	return functionalToRoman(val);
+}
 
-	if (val <= 0 || val > 3999)
-		throw logic_error("Invalid number: the number should be > 0 and < 3900");
-
-	if (val <= 10)
-		return roman(convert(1, val));
-	else if (val <= 100)
-		return roman(convert(2, val));
-	else if (val <= 1000)
-		return roman(convert(3, val));
-
-	string beginStr("");
-	if (val < 2000)
-		beginStr += "M";
-	else if (val < 3000)
-		beginStr += "MM";
-	else if (val < 4000)
-		beginStr += "MMM";
-	beginStr += convert(3, val % 1000);
-
-	return roman(beginStr);
+roman Convertor::toRoman(int& val)
+{
+	return functionalToRoman(val);
 }
