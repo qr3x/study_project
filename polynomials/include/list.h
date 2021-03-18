@@ -150,6 +150,8 @@ void List<T>::add(const T& value, int index)
 			oldHead->prev = this->head;
 			this->tail->next = this->head;
 
+			this->count++;
+
 			return;
 		}
 
