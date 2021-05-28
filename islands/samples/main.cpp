@@ -1,36 +1,35 @@
-#include <stdlib.h>  // Для cls
-#include <conio.h>   // Для getch
 #include "islands.h"
-
-
-using namespace  std;
-
+#include <conio.h>
+using namespace std;
 
 int main() {
-    Matrix<int> mat(5);
-    cout << mat;
+	int m, n;
+	cout << "Enter row and columns: ";
+	cin >> m >> n;
 
- /*   setlocale(LC_ALL, "Russian");
+	int** arr = new int* [m];
+	for (int i = 0; i < m; i++) {
+		// create our island using random or typing
+		arr[i] = new int[n];
+		for (int j = 0; j < n; j++) {
+			arr[i][j] = rand() % 2 + 0; 
+			// or
+			// cin >> arr[i][j];
+		}
+		// if using typing (cin)
+		// cout << endl;
+	}
 
-    cout << "Привет. Это конвертер римских чисел в арабские и наоборот" << endl;
+	// output ours island before and after foundIslands()
+	cout << "before foundIslands():" << endl;
+	out(arr, m, n);
 
-    int num;
-    while (true)
-    {            
-        num = menu();
-        if (num == 0)
-            break;
-        else if (num == 1)
-            romanToArabic();
-        else if (num == 2)
-            arabicToRoman();
+	int result = foundIslands(arr, m, n);
 
-        cout << "Нажмите любую клавишу, чтобы продолжить";
-        getch();
-        system("cls");
-    }
+	cout << endl << endl << "after foundIslands():";
+	out(arr, m, n);
 
-    system("cls");
-    cout << "Работа закончена" << endl;
-    return 0;*/
+	cout << endl << endl << "result: " << result;
+
+	return 0;
 }
