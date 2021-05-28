@@ -1,32 +1,44 @@
 #include <iostream>
 
 
+using namespace std;
+
+
 void IslandWalk(int** arr, int m, int n, int i, int j, int NumForIsl) {
 	arr[i][j] = NumForIsl;
 	
+	// look to the right
 	if (i + 1 < m) {
+		// zero right
 		if (arr[i + 1][j] == 0) {
 			IslandWalk(arr, m, n, i + 1, j, NumForIsl);
 		}
-		if(j + 1 < n)
+		// zero bottom right
+		if (j + 1 < n)
 			if (arr[i + 1][j + 1] == 0) {
 				IslandWalk(arr, m, n, i + 1, j + 1, NumForIsl);
 			}
 	}
 
+	// look to the bottom
 	if (j + 1 < n) {
+		// zero bottom
 		if (arr[i][j + 1] == 0) {
 			IslandWalk(arr, m, n, i, j + 1, NumForIsl);
 		}
+		// zero bottom left
 		if(i > 0)
 			if (arr[i - 1][j + 1] == 0) {
 				IslandWalk(arr, m, n, i - 1, j + 1, NumForIsl);
 			}
 	}
 	
+	// look to the top
 	if (j > 0) {
+		// zero top
 		if (arr[i][j - 1] == 0)
 			IslandWalk(arr, m, n, i, j - 1, NumForIsl);
+		// zero top left
 		if (i > 0)
 			if (arr[i - 1][j - 1] == 0)
 				IslandWalk(arr, m, n, i - 1, j - 1, NumForIsl);
@@ -35,6 +47,8 @@ void IslandWalk(int** arr, int m, int n, int i, int j, int NumForIsl) {
 }
 
 int foundIslands(int** arr, int m, int n) {
+	// we go through a two-dimensional array
+	// met zero - look for zeros on the left, right, bottom and mark them
 	int Count = 0; int NumForIsl = 2;
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++) {
@@ -45,14 +59,15 @@ int foundIslands(int** arr, int m, int n) {
 			}
 		}
 	}
+
 	return Count;
 }
 
 void out(int** arr, int m, int n) {
 	for (int i = 0; i < m; i++) {
-		std::cout << '\n' << "";
+		cout << '\n' << "";
 		for (int j = 0; j < n; j++) {
-			std::cout << arr[i][j] << ' ';
+			cout << arr[i][j] << ' ';
 		}
 	}
 }
