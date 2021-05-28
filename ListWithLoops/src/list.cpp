@@ -35,19 +35,7 @@ void List::add(Node* n) {
 }
 
 void List::clear() {
-	if (this->head != nullptr)
-	{
-		Node* node = this->head;
-		Node* next;
-		while (node != nullptr)
-		{
-			next = node->next;
-			delete node;
-			node = next;
-		}
-		this->head = nullptr;
-	}
-	count = 0;
+	this->head != nullptr;
 }
 
 void List::print() {
@@ -72,7 +60,7 @@ void List::print() {
 }
 
 // the first one takes one step, the second two
-bool List::isLoop() {
+bool List::isLoop1() {
 	if (this->count == 0)
 		throw logic_error("List is empty");
 
@@ -88,4 +76,65 @@ bool List::isLoop() {
 		node1 = node1->next;
 		node2 = node2->next->next;
 	}
+}
+
+// the first steps on 1, 2, 3 and etc
+bool List::isLoop2() {
+	if (this->count == 0)
+		throw logic_error("List is empty");
+
+	int step = 1;
+
+	Node* first = head;
+	while (true) {
+		Node* second = first;
+		for (int i = 0; i < step; i++) {
+			second = second->next;
+			if (second->next == nullptr)
+				return false;
+		}
+
+		if (first == second)
+			return true;
+
+		first = second;
+
+		step++;
+	}
+}
+
+// changing pointers
+bool List::isLoop3() {
+	if (head == nullptr)
+		return false;
+	if (head->next == nullptr)
+		return false;
+
+	Node* node = nullptr;
+	Node* curr = head;
+	Node* next = head->next;
+	bool isloop = false;
+	while (true) { 
+		curr->next = node;
+		if (next == nullptr) {
+			if (curr == head)
+				isloop = true;
+			Node* tmp = next;
+			next = node;
+			node = tmp;
+			break;
+		}
+		node = curr;
+		curr = next;
+		next = next->next;
+	}
+	while (true) {
+		curr->next = node;
+		if (next == nullptr)
+			break;
+		node = curr;
+		curr = next;
+		next = next->next;
+	}
+	return isloop;
 }

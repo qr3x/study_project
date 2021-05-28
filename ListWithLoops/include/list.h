@@ -44,7 +44,9 @@ public:
 	void addVal(int val);
 	void add(Node* n);
 
-	bool isLoop();
+	bool isLoop1();
+	bool isLoop2();
+	bool isLoop3();
 
 	void clear();
 

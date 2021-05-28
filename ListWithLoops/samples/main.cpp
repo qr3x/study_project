@@ -15,8 +15,24 @@ int main()
     L.add(n3);
     L.add(n2);
 
-    int result = L.isCircle();
-    cout << "Count loops: " << result << endl;
+
+    for (int i = 0; i < 3; i++)
+    {
+        int result;
+        if (i == 0)
+            result = L.isLoop1();
+        else if (i == 1)
+            result = L.isLoop2();
+        else
+            result = L.isLoop3();
+        string res_str;
+        if (result != 0)
+            res_str = "yes";
+        else
+            res_str = "no";
+        cout << "Is loops" << i + 1 << ": " << res_str << endl;
+    }
+    
 
     return 0;
 }
