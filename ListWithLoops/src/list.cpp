@@ -128,13 +128,5 @@ bool List::isLoop3() {
 		curr = next;
 		next = next->next;
 	}
-	while (true) {
-		curr->next = node;
-		if (next == nullptr)
-			break;
-		node = curr;
-		curr = next;
-		next = next->next;
-	}
 	return isloop;
 }
