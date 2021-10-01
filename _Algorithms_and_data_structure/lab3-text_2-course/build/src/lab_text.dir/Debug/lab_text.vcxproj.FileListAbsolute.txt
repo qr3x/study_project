@@ -1,0 +1,2 @@
+D:\programming\vs\study\lab3-text_2-course\build\lib\Debug\lab_text.pdb
+D:\programming\vs\study\lab3-text_2-course\build\src\lab_text.dir\Debug\lab_text.pdb

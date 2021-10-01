@@ -1,0 +1,10 @@
+^D:\PROGRAMMING\VS\STUDY\LAB3-TEXT_2-COURSE\SAMPLES\CMAKELISTS.TXT
+setlocal
+D:\programs\cmake\bin\cmake.exe -SD:/programming/vs/study/lab3-text_2-course -BD:/programming/vs/study/lab3-text_2-course/build --check-stamp-file D:/programming/vs/study/lab3-text_2-course/build/samples/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,7 @@
+D:/programming/vs/study/lab3-text_2-course/build/CMakeFiles/ALL_BUILD.dir
+D:/programming/vs/study/lab3-text_2-course/build/CMakeFiles/ZERO_CHECK.dir
+D:/programming/vs/study/lab3-text_2-course/build/include/CMakeFiles/SOURCES.dir
+D:/programming/vs/study/lab3-text_2-course/build/src/CMakeFiles/lab_text.dir
+D:/programming/vs/study/lab3-text_2-course/build/samples/CMakeFiles/main.dir
+D:/programming/vs/study/lab3-text_2-course/build/gtest/CMakeFiles/gtest.dir
+D:/programming/vs/study/lab3-text_2-course/build/test/CMakeFiles/test_lab_text.dir

@@ -1,0 +1,10 @@
+^D:\PROGRAMMING\VS\STUDY\LAB3-TEXT_2-COURSE\BUILD\CMAKEFILES\76851D2D10B1078A7377F196F62114B7\GENERATE.STAMP.RULE
+setlocal
+D:\programs\cmake\bin\cmake.exe -SD:/programming/vs/study/lab3-text_2-course -BD:/programming/vs/study/lab3-text_2-course/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/programming/vs/study/lab3-text_2-course/build/lab_text.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
