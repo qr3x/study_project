@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="bf5dc142-b358-4010-9cc5-f38fc0f23fdd" name="Default Changelist" comment="">
+    <list default="true" id="2e01af21-5f04-4120-8f28-81051ee37184" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../../_Algorithms_and_data_structure/mp2-lab1-set" beforeDir="false" afterPath="$PROJECT_DIR$/../../_Algorithms_and_data_structure/mp2-lab1-set" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main4_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/main4_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hw4/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hw4/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hw4/main4_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/../hw4/main4_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/interface.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/launcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/launcher.py" afterDir="false" />
     </list>
@@ -19,7 +20,10 @@
       </list>
     </option>
   </component>
-  <component name="ProjectId" id="1yZYJYxfpXjOoL4bKtj4xRuZuIG" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectId" id="1zD4B6wEQWgzBtLwKvtQX7rPCnx" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -30,9 +34,9 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
-  <component name="RunManager" selected="Python.labs">
-    <configuration name="labs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="hw4" />
+  <component name="RunManager" selected="Python.6_1">
+    <configuration name="6_1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="hw5" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -43,28 +47,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/labs.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="main4_1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="hw4" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="D:\programming\python\_Computer_modeling_of_probabilistic_processes\hw4\main4_1.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/6_1.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -74,7 +57,7 @@
       <method v="2" />
     </configuration>
     <configuration name="main4_2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="hw4" />
+      <module name="hw5" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -96,9 +79,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.labs" />
+        <item itemvalue="Python.6_1" />
         <item itemvalue="Python.main4_2" />
-        <item itemvalue="Python.main4_1" />
       </list>
     </recent_temporary>
   </component>
@@ -119,34 +101,30 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="bf5dc142-b358-4010-9cc5-f38fc0f23fdd" name="Default Changelist" comment="" />
-      <created>1632460505865</created>
+      <changelist id="2e01af21-5f04-4120-8f28-81051ee37184" name="Default Changelist" comment="" />
+      <created>1633669186033</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1632460505865</updated>
+      <updated>1633669186033</updated>
     </task>
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="740" y="276" key="FileChooserDialogImpl" timestamp="1633668978624">
+    <state width="1899" height="415" key="GridCell.Tab.0.bottom" timestamp="1633672855336">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="740" y="276" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1633668978624" />
-    <state width="1899" height="298" key="GridCell.Tab.0.bottom" timestamp="1633067730152">
+    <state width="1899" height="415" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1633672855336" />
+    <state width="1899" height="415" key="GridCell.Tab.0.center" timestamp="1633672855336">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="298" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1633067730152" />
-    <state width="1899" height="298" key="GridCell.Tab.0.center" timestamp="1633067730151">
+    <state width="1899" height="415" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1633672855336" />
+    <state width="1899" height="415" key="GridCell.Tab.0.left" timestamp="1633672855336">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="298" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1633067730151" />
-    <state width="1899" height="298" key="GridCell.Tab.0.left" timestamp="1633067730151">
+    <state width="1899" height="415" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1633672855336" />
+    <state width="1899" height="415" key="GridCell.Tab.0.right" timestamp="1633672855336">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="298" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1633067730151" />
-    <state width="1899" height="298" key="GridCell.Tab.0.right" timestamp="1633067730151">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="1899" height="298" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1633067730151" />
+    <state width="1899" height="415" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1633672855336" />
   </component>
 </project>

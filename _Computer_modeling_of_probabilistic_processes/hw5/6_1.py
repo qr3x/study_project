@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from math import fabs
 
 import os
 import time
@@ -11,10 +12,10 @@ def _cls():
 
 
 # Подсчет времени работы функции
-def measure_the_time(function) -> list:
+def measure_the_time(function) -> tuple:
     start = time.time()
 
-    p = function()
+    p, err = function()
 
     second = int((time.time() - start))
 
@@ -26,13 +27,13 @@ def measure_the_time(function) -> list:
 
     print(f'Программа отработала за {hour} ч. {minute} мин. {second} сек.')
 
-    return p
+    return p, err
 
 
-def main() -> list:
+def main() -> tuple:
     n = 100     # число экспериментов
-    n_dice = 4  # кол-во игральных костей
-    n_six = 1   # число выпадения шестерки
+    n_dice = 3  # кол-во игральных костей
+    n_six = 2   # число выпадения шестерки
 
     # Ввод с отловом ошибок
     while True:
@@ -112,25 +113,32 @@ def main() -> list:
     for i, elem in enumerate(m_arr):
         p_arr.append(round(elem / (i + 1), 3))
     p = m / n
+    th = round(3 * (1/6) ** 2 * 5/6 + (1/6) ** 3, 3)
     print(f'\n'
           f'Вероятность, посчитанная с помощью программы: {round(p, 3)}\n'
-          f'Теорит. вероятность: {round(1 - 5 ** 4 / 6 ** 4, 3)}')
+          f'Теорит. вероятность: {th}')
+
+    err_arr = []
+    for i, elem in enumerate(p_arr):
+        err_arr.append(fabs(round(elem, 3) - th))
 
     """ Теор решение задачи 
-    4 кости => всего исходов 6^4, не благоприятствующих 5^4 (когда на всех выпадает что угодно, но не 6)
+    3 кости => всего исходов 6^3, не благоприятствующих 5^4 (когда на всех выпадает что угодно, но не 6)
     => P = (6^4 - 5^4) / 6^4 или 1 - 5^4 / 6^4
+    => P = 3 * (1/6)^2 * 5/6 + (1/6)^3
     """
 
-    return p_arr
+    return p_arr, err_arr
 
 
 if __name__ == '__main__':
     np.random.seed(20)
-    P = measure_the_time(main)
+    P, error = measure_the_time(main)
 
     plt.title('Зависимость вероятности от количества экспериментов')
     plt.xlabel('Количество экспериментов')
     plt.ylabel('Вероятность')
 
     plt.plot([i for i in range(1, len(P) + 1)], P)
+    plt.plot([i for i in range(1, len(P) + 1)], error)
     plt.show()

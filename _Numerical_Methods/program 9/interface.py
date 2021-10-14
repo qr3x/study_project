@@ -1,37 +1,32 @@
 # Сторонние библиотеки
 # настройка окна
-from PyQt5.QtWidgets import (QMainWindow, QAction, QStyleOptionHeader)
+from PyQt5.QtWidgets import (QMainWindow, QAction)
 
-"""Инструкменты для макета"""
+"""Инструменты для макета"""
 # диалоговые окна
 from PyQt5.QtWidgets import QMessageBox, QInputDialog
 # инструменты для шаблона
-from PyQt5.QtWidgets import (QGridLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLabel, QComboBox, QCheckBox,
-                             QLineEdit, QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QApplication, QPlainTextEdit,
-                             QFrame)
+from PyQt5.QtWidgets import (QTableWidget, QTableWidgetItem, QLabel, QComboBox, QLineEdit, QWidget, QHBoxLayout,
+                             QVBoxLayout, QPlainTextEdit, QFrame)
 # стилистика
-from PyQt5.QtGui import (QIcon, QFont, QColor, QLinearGradient)
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-
-import decimal
 
 # Графики
 import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-matplotlib.use('Qt5Agg')
+# Числа с плавающей запятой
+from decimal import Decimal
 
 
 # Мои модули
 from launcher import Analysis
+from config import float_to_str
 
 
-def float_to_str(number: float):
-    ctx = decimal.Context()
-    ctx.prec = 20
-
-    return format(ctx.create_decimal(repr(number)), 'f')
+matplotlib.use('Qt5Agg')
 
 
 class Window(object):
@@ -61,11 +56,16 @@ class Window(object):
         self.workMenu.triggered.connect(self.work)
 
         # Кнопка "Условия задачи"
-        self.instructionMenu = QAction('&Условия задачи')
-        self.instructionMenu.triggered.connect(self.open_instruction_all)
+        self.conditionMenu = QAction('&Условия задачи')
+        self.conditionMenu.triggered.connect(self.condition)
+
+        # Кнопка "О методе"
+        self.rkm = QAction('&О методе')
+        self.rkm.triggered.connect(self.rungeKutta_method)
 
         menubar.addAction(self.workMenu)
-        menubar.addAction(self.instructionMenu)
+        menubar.addAction(self.conditionMenu)
+        menubar.addAction(self.rkm)
 
         # Настраиваем макет
         self.initUI()
@@ -90,7 +90,7 @@ class Window(object):
         """-------------------------------------------Блок с настройками---------------------------------------------"""
         option = QWidget(main)
         option.setStyleSheet('QLineEdit { border: none; }')
-        option.setFixedSize(600, 400)
+        option.setFixedSize(910, 450)
         optionVBox = QVBoxLayout()
         optionVBox.setSpacing(13)
 
@@ -105,6 +105,8 @@ class Window(object):
         optionHBox9 = QHBoxLayout()
         optionHBox10 = QHBoxLayout()
         optionHBox11 = QHBoxLayout()
+        optionHBox12 = QHBoxLayout()
+        optionHBox13 = QHBoxLayout()
 
         # Элементы
         label_startVar = QLabel('Начальные условия')
@@ -115,7 +117,6 @@ class Window(object):
         self.x0 = QLineEdit()
         self.x0.setFixedHeight(25)
         self.x0.setText('0')
-        # self.x0.setFixedSize(260, 20)
         box_x0 = QHBoxLayout()
         box_x0.addWidget(label_x0)
         box_x0.addWidget(self.x0)
@@ -125,7 +126,7 @@ class Window(object):
         label_u0.setToolTip('Начальное скорость точки')
         self.u0 = QLineEdit()
         self.u0.setFixedHeight(25)
-        self.u0.setText('0')
+        self.u0.setText('100')
         box_u0 = QHBoxLayout()
         box_u0.addWidget(label_u0)
         box_u0.addWidget(self.u0)
@@ -135,7 +136,7 @@ class Window(object):
         label_a1.setToolTip('Положительная постоянная a<sub>1</sub>')
         self.a1 = QLineEdit()
         self.a1.setFixedHeight(25)
-        self.a1.setText('1')
+        self.a1.setText('5')
         box_a1 = QHBoxLayout()
         box_a1.addWidget(label_a1)
         box_a1.addWidget(self.a1)
@@ -145,7 +146,7 @@ class Window(object):
         label_a3.setToolTip('Положительная постоянная a<sub>3</sub>')
         self.a3 = QLineEdit()
         self.a3.setFixedHeight(25)
-        self.a3.setText('1')
+        self.a3.setText('2')
         box_a3 = QHBoxLayout()
         box_a3.addWidget(label_a3)
         box_a3.addWidget(self.a3)
@@ -154,7 +155,7 @@ class Window(object):
         label_m.setToolTip('Масса точки')
         self.m = QLineEdit()
         self.m.setFixedHeight(25)
-        self.m.setText('1')
+        self.m.setText('10')
         box_m = QHBoxLayout()
         box_m.addWidget(label_m)
         box_m.addWidget(self.m)
@@ -163,7 +164,7 @@ class Window(object):
         label_h.setToolTip('Шаг')
         self.h = QLineEdit()
         self.h.setFixedHeight(25)
-        self.h.setText('0.01')
+        self.h.setText('0.0001')
         box_h = QHBoxLayout()
         box_h.addWidget(label_h)
         box_h.addWidget(self.h)
@@ -177,7 +178,16 @@ class Window(object):
         box_n.addWidget(label_n)
         box_n.addWidget(self.n)
 
-        label_control = QLabel('Контроль ЛП')
+        label_control = QLabel('Контроль')
+
+        label_b = QLabel('b    ')
+        label_b.setToolTip('Правая граница')
+        self.b = QLineEdit()
+        self.b.setFixedHeight(25)
+        self.b.setText('100')
+        box_b = QHBoxLayout()
+        box_b.addWidget(label_b)
+        box_b.addWidget(self.b)
 
         label_Egr = QLabel()
         label_Egr.setText('E<sub>гр</sub>  &#160;')
@@ -217,6 +227,12 @@ class Window(object):
         self.combobox.addItem('Отказ от контроля погрешности "снизу"')
         self.combobox.addItem('Отказ от контроля погрешности "снизу и сверху"')
 
+        self.comboboxV = QComboBox()
+        self.comboboxV.setFixedHeight(25)
+        self.comboboxV.addItem('В качестве Vn итог берем Vn')
+        self.comboboxV.addItem('В качестве Vn итог берем Vn удв')
+        self.comboboxV.addItem('В качестве Vn итог берем Vn кор')
+
         # Заполняем все горизонтальные блоки
         optionHBox1.addLayout(box_x0)
         optionHBox2.addLayout(box_u0)
@@ -225,10 +241,12 @@ class Window(object):
         optionHBox5.addLayout(box_m)
         optionHBox6.addLayout(box_h)
         optionHBox7.addLayout(box_n)
-        optionHBox8.addLayout(box_Egr)
-        optionHBox9.addLayout(box_E)
-        optionHBox10.addLayout(box_Emin)
-        optionHBox11.addWidget(self.combobox)
+        optionHBox8.addLayout(box_b)
+        optionHBox9.addLayout(box_Egr)
+        optionHBox10.addLayout(box_E)
+        optionHBox11.addLayout(box_Emin)
+        optionHBox12.addWidget(self.combobox)
+        optionHBox13.addWidget(self.comboboxV)
 
         # Заполняем все вертикальные блоки
         optionVBox.addWidget(label_startVar)
@@ -244,6 +262,8 @@ class Window(object):
         optionVBox.addLayout(optionHBox9)
         optionVBox.addLayout(optionHBox10)
         optionVBox.addLayout(optionHBox11)
+        optionVBox.addLayout(optionHBox12)
+        optionVBox.addLayout(optionHBox13)
 
         option.setLayout(optionVBox)
 
@@ -254,7 +274,7 @@ class Window(object):
         label_at = QLabel('Справка')
         label_at.setAlignment(Qt.AlignCenter)
         self.textarea = QPlainTextEdit()
-        self.textarea.setFixedSize(600, 376)
+        self.textarea.setFixedSize(600, 450)
         self.textarea.setFrameStyle(QFrame.NoFrame)
         self.textarea.setReadOnly(True)
 
@@ -266,8 +286,10 @@ class Window(object):
         self.table = QTableWidget(main)
         self.table.setColumnCount(9)
         self.table.setRowCount(15)
-        self.table.setFixedSize(594, 400)
-        self.table.verticalHeader().hide()
+        # self.table.setFixedSize(594, 400)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setFixedSize(900, 400)
+
         self.table.setFrameStyle(QFrame.NoFrame)
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -279,13 +301,18 @@ class Window(object):
         self.table.setHorizontalHeaderLabels(header)
         for i in range(9):
             self.table.horizontalHeaderItem(i).setTextAlignment(Qt.AlignHCenter)
-            self.table.setColumnWidth(i, 66)
+            if i in [0, 7, 8]:
+                self.table.setColumnWidth(i, 5 * 9)
+            elif i == 1:
+                self.table.setColumnWidth(i, 10 * 9)
+            else:
+                self.table.setColumnWidth(i, 15 * 9)
 
         """---------------------------------------------Блок с графиком----------------------------------------------"""
 
         class mlpCanvas(FigureCanvas):
             """
-            Чтобы нарисовать новый график, нужно объект.plot(list)
+            Чтобы нарисовать новый график, нужно объект.plot(list, list)
             """
 
             def __init__(self, width=5, height=4, dpi=100):
@@ -293,13 +320,16 @@ class Window(object):
                 fig = Figure(figsize=(width, height), dpi=dpi)
                 FigureCanvas.__init__(self, fig)
                 self.ax = self.figure.add_subplot(111)
+                self.ax.set_xlabel('Xn')
+                self.ax.set_ylabel('Un')
                 FigureCanvas.updateGeometry(self)
 
             def plot(self, x: list, y: list):
                 self.ax.plot(x, y)
+                self.draw_idle()
 
         self.canvas = mlpCanvas()
-        self.canvas.plot([1, 2, 3, 4, 5], [1, 5, 2, 7, 4])
+        # self.canvas.plot([1, 2, 3, 4, 5], [1, 5, 2, 7, 4])
 
         mainHBox1.addWidget(option)
         mainHBox1.addWidget(reference)
@@ -314,9 +344,9 @@ class Window(object):
 
         self.window.setCentralWidget(main)
 
-    def open_instruction_all(self):
+    def condition(self):
         """
-        Открытие общей инструкции
+        Открытие условия задачи
         """
 
         message = '<p><b>Вариант 4</b></p>' \
@@ -334,43 +364,131 @@ class Window(object):
         self.dialog_message.setText(message)
         self.dialog_message.exec()
 
+    def rungeKutta_method(self):
+        """
+        Открытие справки о методе
+        :return:
+        """
+
+        message = '<p><b>(5) Метод Рунге-Кутта явный 3-ого порядка, p = 3</b></p>' \
+                  '' \
+                  '<p>x<sub>0</sub>, v<sub>0</sub> = u<sub>0</sub>,</p>' \
+                  '' \
+                  '<p>x<sub>n+1</sub> = x<sub>n</sub> + h<sub>n</sub>,</p>' \
+                  '' \
+                  '<p>v<sub>n+1</sub> = v<sub>n</sub> + h<sub>n</sub>/6 * ' \
+                  '(k<sub>1</sub> + 4k<sub>2</sub> + k<sub>5</sub>),</p>' \
+                  '' \
+                  '<p>k<sub>1</sub> = f(x<sub>n</sub>, v<sub>n</sub>),</p>' \
+                  '' \
+                  '<p>k<sub>2</sub> = f(x<sub>n</sub> + h<sub>n</sub>/2, ' \
+                  'v<sub>n</sub> + h<sub>n</sub>/2 * k<sub>1</sub>),</p>' \
+                  '' \
+                  '<p>k<sub>3</sub> = f(x<sub>n</sub> + h<sub>n</sub>, ' \
+                  'v<sub>n</sub> + h<sub>n</sub>(-k<sub>1</sub> + 2k<sub>2</sub>)).</p>'
+
+        self.dialog_message.setWindowTitle('Инструкция: Общая инструкция')
+        self.dialog_message.setWindowIcon(QIcon('options\\favicon.ico'))
+        self.dialog_message.setText(message)
+        self.dialog_message.exec()
+
+    def error_input(self, message):
+        """
+        Сообщение об ошибке в модальном окне
+        """
+
+        self.dialog_message.setWindowTitle('Инструкция: Общая инструкция')
+        self.dialog_message.setWindowIcon(QIcon('options\\favicon.ico'))
+        self.dialog_message.setText(message)
+        self.dialog_message.exec()
+
+    def data_to_table(self, data: dict):
+        """
+        Записываем полученные данные в таблицу
+        :param data: словарь с информацией
+        """
+
+        def create_item(row: int, col: int, text: str):
+            item = QTableWidgetItem(str(text))
+            item.setFlags(Qt.ItemIsEnabled)
+            self.table.setItem(row, col, item)
+
+        self.table.setRowCount(len(data['n']))
+
+        for i, n in enumerate(data['n']):
+            create_item(i, 0, n)
+            create_item(i, 1, data['hn-1'][i])
+            create_item(i, 2, data['xn'][i])
+            create_item(i, 3, data['vn'][i])
+            create_item(i, 4, data['vn_ud'][i])
+            create_item(i, 5, data['S*'][i])
+            create_item(i, 6, data['vn_res'][i])
+            create_item(i, 7, data['step_decrease'][i])
+            create_item(i, 8, data['step_increase'][i])
+
     def work(self):
+        error = False
         if float(self.a1.text()) <= 0:
-            self.textarea.appendPlainText('Значение параметра a1 должно быть положительным')
+            error = True
+            self.error_input('Значение параметра a1 должно быть положительным')
         if float(self.a3.text()) <= 0:
-            self.textarea.appendPlainText('Значение параметра a3 должно быть положительным')
+            error = True
+            self.error_input('Значение параметра a3 должно быть положительным')
         if float(self.m.text()) <= 0:
-            self.textarea.appendPlainText('Значение параметра m должно быть положительным')
+            error = True
+            self.error_input('Значение параметра m должно быть положительным')
         if float(self.h.text()) <= 0:
-            self.textarea.appendPlainText('Шаг должен быть положительным')
+            error = True
+            self.error_input('Шаг должен быть положительным')
         try:
             if int(self.n.text()) <= 0:
-                self.textarea.appendPlainText('Кол-во шагов должно быть положительным')
+                error = True
+                self.error_input('Кол-во шагов должно быть положительным')
         except ValueError:
-            self.textarea.appendPlainText('Кол-во шагов должно быть целым')
+            error = True
+            self.error_input('Кол-во шагов должно быть целым')
 
+        if float(self.b.text()) <= float(self.x0.text()):
+            error = True
+            self.error_input('Правая граница находится левее начала счета')
         if float(self.Egr.text()) < 0:
-            self.textarea.appendPlainText('Контроль выхода за правую границу дожлен быть неотрицательным')
+            error = True
+            self.error_input('Контроль выхода за правую границу дожлен быть неотрицательным')
         if float(self.E.text()) <= 0:
-            self.textarea.appendPlainText('Контроль ЛП "сверху" должен быть неотрицательным')
+            error = True
+            self.error_input('Контроль ЛП "сверху" должен быть неотрицательным')
         if float(self.Emin.text()) <= 0:
-            self.textarea.appendPlainText('Контроль ЛП "снизу" должен быть неотрицательным')
+            error = True
+            self.error_input('Контроль ЛП "снизу" должен быть неотрицательным')
         if float(self.Emin.text()) > float(self.E.text()):
-            self.textarea.appendPlainText('Контроль ЛП "сверху" должен быть не меньше контроля ЛП "снизу"')
+            error = True
+            self.error_input('Контроль ЛП "сверху" должен быть не меньше контроля ЛП "снизу"')
 
-        data = {'x0': self.x0.text(),
-                'u0': self.u0.text(),
-                'a1': self.a1.text(),
-                'a3': self.a3.text(),
-                'm': self.m.text(),
-                'h': self.h.text(),
-                'n': self.n.text(),
-                'Egr': self.Egr.text(),
-                'E': self.E.text(),
-                'Emin': self.Emin.text(),
-                'cb': self.combobox.currentIndex()}
+        data = {'x0': Decimal(self.x0.text()),
+                'u0': Decimal(self.u0.text()),
+                'a1': Decimal(self.a1.text()),
+                'a3': Decimal(self.a3.text()),
+                'm': Decimal(self.m.text()),
+                'h': Decimal(self.h.text()),
+                'n': int(self.n.text()),
+                'b': Decimal(self.b.text()),
+                'Egr': Decimal(self.Egr.text()),
+                'E': Decimal(self.E.text()),
+                'Emin': Decimal(self.Emin.text()),
+                'cb': int(self.combobox.currentIndex()),
+                'cbV': int(self.comboboxV.currentIndex()),
+                'p': self.p}
 
-        analysis = Analysis(data)
+        if not error:
+            analysis = Analysis(data)
+            del data
+            data = analysis.work()
 
+            # Запишем справку
+            self.textarea.appendHtml(data['message'])
 
+            # Запишем данные в таблицу
+            self.data_to_table(data)
 
+            # Построим график
+            self.canvas.plot(data['xn'], data['vn_res'])
