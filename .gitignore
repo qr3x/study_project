@@ -1,13 +1,13 @@
 #my
-*/logs
-*/plan
-*/venv
-*/.idea
-*/output.txt
-*/logger.log
-*/debug.log
-*/need.py
-*/*.rar
+logs/
+plan/
+venv/
+.idea/
+output.txt
+logger.log
+debug.log
+need.py
+*.rar
 
 # Byte-compiled  optimized  DLL files
 __pycache__
