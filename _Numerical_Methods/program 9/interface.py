@@ -42,7 +42,7 @@ class Window(object):
         # Устанавливаем окно с его настройками
         self.window = QMainWindow()
         self.window.setWindowState(Qt.WindowMaximized)
-        self.window.setWindowTitle("Задача Коши для ОДУ")
+        self.window.setWindowTitle("Программа для задачи №9. Кишкин Владислав 381903-3")
         self.window.setWindowIcon(QIcon('options\\favicon.ico'))
 
         # Меню
@@ -50,6 +50,7 @@ class Window(object):
         menubar = self.window.menuBar()
         self.dialog_message = QMessageBox()
         self.dialog_input = QInputDialog()
+        self.dialog_message.setStyleSheet('QMessageBox { font-size: 13pt;}; ')
 
         # Кнопка "Начать"
         self.workMenu = QAction('&Начать')
@@ -89,8 +90,9 @@ class Window(object):
 
         """-------------------------------------------Блок с настройками---------------------------------------------"""
         option = QWidget(main)
-        option.setStyleSheet('QLineEdit { border: none; }')
-        option.setFixedSize(910, 450)
+        option.setStyleSheet('QLineEdit { border: none; }'
+                             'QLabel { font-size: 10pt; };')
+        option.setFixedSize(910, 530)
         optionVBox = QVBoxLayout()
         optionVBox.setSpacing(13)
 
@@ -109,30 +111,11 @@ class Window(object):
         optionHBox13 = QHBoxLayout()
 
         # Элементы
-        label_startVar = QLabel('Начальные условия')
-
-        label_x0 = QLabel()
-        label_x0.setText('x<sub>0</sub>')
-        label_x0.setToolTip('Начальное время')
-        self.x0 = QLineEdit()
-        self.x0.setFixedHeight(25)
-        self.x0.setText('0')
-        box_x0 = QHBoxLayout()
-        box_x0.addWidget(label_x0)
-        box_x0.addWidget(self.x0)
-
-        label_u0 = QLabel()
-        label_u0.setText('u<sub>0</sub>')
-        label_u0.setToolTip('Начальное скорость точки')
-        self.u0 = QLineEdit()
-        self.u0.setFixedHeight(25)
-        self.u0.setText('100')
-        box_u0 = QHBoxLayout()
-        box_u0.addWidget(label_u0)
-        box_u0.addWidget(self.u0)
+        label_Var = QLabel('Параметры системы')
+        label_Var.setStyleSheet('font-size: 9pt;')
 
         label_a1 = QLabel()
-        label_a1.setText('a<sub>1</sub>')
+        label_a1.setText('a<sub>1</sub>&#160;&#160;&#160;')
         label_a1.setToolTip('Положительная постоянная a<sub>1</sub>')
         self.a1 = QLineEdit()
         self.a1.setFixedHeight(25)
@@ -142,7 +125,7 @@ class Window(object):
         box_a1.addWidget(self.a1)
 
         label_a3 = QLabel()
-        label_a3.setText('a<sub>3</sub>')
+        label_a3.setText('a<sub>3</sub>&#160;&#160;&#160;')
         label_a3.setToolTip('Положительная постоянная a<sub>3</sub>')
         self.a3 = QLineEdit()
         self.a3.setFixedHeight(25)
@@ -151,7 +134,7 @@ class Window(object):
         box_a3.addWidget(label_a3)
         box_a3.addWidget(self.a3)
 
-        label_m = QLabel('m ')
+        label_m = QLabel('m <sub>&#160;</sub>&#160;')
         label_m.setToolTip('Масса точки')
         self.m = QLineEdit()
         self.m.setFixedHeight(25)
@@ -160,8 +143,34 @@ class Window(object):
         box_m.addWidget(label_m)
         box_m.addWidget(self.m)
 
-        label_h = QLabel('h <sub>&#160;</sub>')
-        label_h.setToolTip('Шаг')
+        label_startVar = QLabel('Начальные условия')
+        label_startVar.setStyleSheet('font-size: 9pt;')
+
+        label_x0 = QLabel()
+        label_x0.setText('x<sub>0</sub>&#160;&#160;&#160;')
+        label_x0.setToolTip('Начальное время')
+        self.x0 = QLineEdit()
+        self.x0.setFixedHeight(25)
+        self.x0.setText('0')
+        box_x0 = QHBoxLayout()
+        box_x0.addWidget(label_x0)
+        box_x0.addWidget(self.x0)
+
+        label_u0 = QLabel()
+        label_u0.setText('u<sub>0</sub>&#160;&#160;&#160;')
+        label_u0.setToolTip('Начальное скорость точки')
+        self.u0 = QLineEdit()
+        self.u0.setFixedHeight(25)
+        self.u0.setText('100')
+        box_u0 = QHBoxLayout()
+        box_u0.addWidget(label_u0)
+        box_u0.addWidget(self.u0)
+
+        label_VarM = QLabel('Параметры метода')
+        label_VarM.setStyleSheet('font-size: 9pt;')
+
+        label_h = QLabel('h &#160;&#160;<sub>&#160;</sub>')
+        label_h.setToolTip('Начальный шаг')
         self.h = QLineEdit()
         self.h.setFixedHeight(25)
         self.h.setText('0.0001')
@@ -169,7 +178,10 @@ class Window(object):
         box_h.addWidget(label_h)
         box_h.addWidget(self.h)
 
-        label_n = QLabel('n <sub>&#160;</sub>')
+        label_control = QLabel('Контроль')
+        label_control.setStyleSheet('font-size: 9pt;')
+
+        label_n = QLabel('n    &#160;&#160;<sub>&#160;</sub>')
         label_n.setToolTip('Счетчик шагов')
         self.n = QLineEdit()
         self.n.setFixedHeight(25)
@@ -177,8 +189,6 @@ class Window(object):
         box_n = QHBoxLayout()
         box_n.addWidget(label_n)
         box_n.addWidget(self.n)
-
-        label_control = QLabel('Контроль')
 
         label_b = QLabel('b    ')
         label_b.setToolTip('Правая граница')
@@ -201,7 +211,7 @@ class Window(object):
 
         label_E = QLabel()
         label_E.setText('E    ')
-        label_E.setToolTip('Параметр контроля локальной поверхности "сверху"')
+        label_E.setToolTip('Параметр контроля локальной погрешности "сверху"')
         self.E = QLineEdit()
         self.E.setFixedHeight(25)
         self.E.setText('0.000005')
@@ -211,7 +221,7 @@ class Window(object):
 
         label_Emin = QLabel()
         label_Emin.setText('E<sub>min</sub>')
-        label_Emin.setToolTip('Параметр контроля локальной поверхности "снизу"')
+        label_Emin.setToolTip('Параметр контроля локальной погрешности "снизу"')
         self.Emin = QLineEdit()
         tmp = float(self.E.text()) / 2 ** (self.p + 1)
         self.Emin.setFixedHeight(25)
@@ -234,11 +244,11 @@ class Window(object):
         self.comboboxV.addItem('В качестве Vn итог берем Vn кор')
 
         # Заполняем все горизонтальные блоки
-        optionHBox1.addLayout(box_x0)
-        optionHBox2.addLayout(box_u0)
-        optionHBox3.addLayout(box_a1)
-        optionHBox4.addLayout(box_a3)
-        optionHBox5.addLayout(box_m)
+        optionHBox1.addLayout(box_a1)
+        optionHBox2.addLayout(box_a3)
+        optionHBox3.addLayout(box_m)
+        optionHBox4.addLayout(box_x0)
+        optionHBox5.addLayout(box_u0)
         optionHBox6.addLayout(box_h)
         optionHBox7.addLayout(box_n)
         optionHBox8.addLayout(box_b)
@@ -249,15 +259,17 @@ class Window(object):
         optionHBox13.addWidget(self.comboboxV)
 
         # Заполняем все вертикальные блоки
-        optionVBox.addWidget(label_startVar)
+        optionVBox.addWidget(label_Var)
         optionVBox.addLayout(optionHBox1)
         optionVBox.addLayout(optionHBox2)
         optionVBox.addLayout(optionHBox3)
+        optionVBox.addWidget(label_startVar)
         optionVBox.addLayout(optionHBox4)
         optionVBox.addLayout(optionHBox5)
+        optionVBox.addWidget(label_VarM)
         optionVBox.addLayout(optionHBox6)
-        optionVBox.addLayout(optionHBox7)
         optionVBox.addWidget(label_control)
+        optionVBox.addLayout(optionHBox7)
         optionVBox.addLayout(optionHBox8)
         optionVBox.addLayout(optionHBox9)
         optionVBox.addLayout(optionHBox10)
@@ -274,7 +286,7 @@ class Window(object):
         label_at = QLabel('Справка')
         label_at.setAlignment(Qt.AlignCenter)
         self.textarea = QPlainTextEdit()
-        self.textarea.setFixedSize(600, 450)
+        self.textarea.setFixedSize(600, 530)
         self.textarea.setFrameStyle(QFrame.NoFrame)
         self.textarea.setReadOnly(True)
 
@@ -328,8 +340,9 @@ class Window(object):
                 fig = Figure(figsize=(width, height), dpi=dpi)
                 FigureCanvas.__init__(self, fig)
                 self.ax = self.figure.add_subplot(111)
-                self.ax.set_xlabel('Xn')
-                self.ax.set_ylabel('Un')
+                self.ax.set_title('Зависимость скорости от времени')
+                self.ax.set_xlabel('Время')
+                self.ax.set_ylabel('Скорость')
                 FigureCanvas.updateGeometry(self)
 
             def plot(self, x: list, y: list):
@@ -337,7 +350,6 @@ class Window(object):
                 self.draw_idle()
 
         self.canvas = mlpCanvas()
-        # self.canvas.plot([1, 2, 3, 4, 5], [1, 5, 2, 7, 4])
 
         mainHBox1.addWidget(option)
         mainHBox1.addWidget(reference)
@@ -367,7 +379,7 @@ class Window(object):
                   'установите общие закономерности зависимости скорости от времени. ' \
                   'Параметры системы: <b>a<sub>1</sub>, a<sub>3</sub></b>. </p>'
 
-        self.dialog_message.setWindowTitle('Инструкция: Общая инструкция')
+        self.dialog_message.setWindowTitle('Условие задачи')
         self.dialog_message.setWindowIcon(QIcon('options\\favicon.ico'))
         self.dialog_message.setText(message)
         self.dialog_message.exec()
@@ -378,7 +390,7 @@ class Window(object):
         :return:
         """
 
-        message = '<p><b>(5) Метод Рунге-Кутта явный 3-ого порядка, p = 3</b></p>' \
+        message = '<p><b>Метод Рунге-Кутта явный 3-ого порядка, p = 3</b></p>' \
                   '' \
                   '<p>x<sub>0</sub>, v<sub>0</sub> = u<sub>0</sub>,</p>' \
                   '' \
@@ -395,7 +407,7 @@ class Window(object):
                   '<p>k<sub>3</sub> = f(x<sub>n</sub> + h<sub>n</sub>, ' \
                   'v<sub>n</sub> + h<sub>n</sub>(-k<sub>1</sub> + 2k<sub>2</sub>)).</p>'
 
-        self.dialog_message.setWindowTitle('Инструкция: Общая инструкция')
+        self.dialog_message.setWindowTitle('Метод')
         self.dialog_message.setWindowIcon(QIcon('options\\favicon.ico'))
         self.dialog_message.setText(message)
         self.dialog_message.exec()
