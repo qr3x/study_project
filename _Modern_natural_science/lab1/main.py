@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
-from scipy.misc import derivative
 
 
 def fp():
@@ -11,7 +10,7 @@ def fp():
     return rhs
 
 
-def eq_quiver(rhs, limits: list or tuple, n=16) -> tuple:
+def eq_quiver(rhs, limits: list or tuple, n) -> tuple:
     """
     Получаем векторы для каждой точки ФП
     :param rhs: сама функция
@@ -31,11 +30,12 @@ def eq_quiver(rhs, limits: list or tuple, n=16) -> tuple:
     return xs, ys, U, V
 
 
-def plotVectors(rhs, limits: list or tuple) -> None:
+def plotVectors(rhs, limits: list or tuple, n=16) -> None:
     """
     Рисуем векторное поле
     :param rhs: сама функция
     :param limits: границы ФП
+    :param n: на сколько частей разбиваем ФП
     :return:
     """
 
@@ -43,7 +43,7 @@ def plotVectors(rhs, limits: list or tuple) -> None:
     xlim, ylim = limits
     plt.xlim(xlim[0], xlim[1])
     plt.ylim(ylim[0], ylim[1])
-    xs, ys, U, V = eq_quiver(rhs, limits)
+    xs, ys, U, V = eq_quiver(rhs, limits, n)
     plt.quiver(xs, ys, U, V, alpha=0.5)
 
 
