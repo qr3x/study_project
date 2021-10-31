@@ -191,17 +191,17 @@ class Window(object):
         box_n.addWidget(self.n)
 
         label_b = QLabel('b    ')
-        label_b.setToolTip('Правая граница')
+        label_b.setToolTip('Нижняя граница для скорости')
         self.b = QLineEdit()
         self.b.setFixedHeight(25)
-        self.b.setText('100')
+        self.b.setText('0')
         box_b = QHBoxLayout()
         box_b.addWidget(label_b)
         box_b.addWidget(self.b)
 
         label_Egr = QLabel()
         label_Egr.setText('E<sub>гр</sub>  &#160;')
-        label_Egr.setToolTip('Параметр контроля выхода на правую границу участка интегрирования')
+        label_Egr.setToolTip('Параметр контроля выхода на нижнюю границу для скорости')
         self.Egr = QLineEdit()
         self.Egr.setFixedHeight(25)
         self.Egr.setText('0.000005')
@@ -417,7 +417,7 @@ class Window(object):
         Сообщение об ошибке в модальном окне
         """
 
-        self.dialog_message.setWindowTitle('Инструкция: Общая инструкция')
+        self.dialog_message.setWindowTitle('Ошибка')
         self.dialog_message.setWindowIcon(QIcon('options\\favicon.ico'))
         self.dialog_message.setText(message)
         self.dialog_message.exec()
@@ -446,43 +446,55 @@ class Window(object):
             create_item(i, 7, data['step_decrease'][i])
             create_item(i, 8, data['step_increase'][i])
 
-    def work(self):
-        error = False
-        if float(self.a1.text()) <= 0:
-            error = True
-            self.error_input('Значение параметра a1 должно быть положительным')
-        if float(self.a3.text()) <= 0:
-            error = True
-            self.error_input('Значение параметра a3 должно быть положительным')
-        if float(self.m.text()) <= 0:
-            error = True
-            self.error_input('Значение параметра m должно быть положительным')
-        if float(self.h.text()) <= 0:
-            error = True
-            self.error_input('Шаг должен быть положительным')
-        try:
-            if int(self.n.text()) <= 0:
-                error = True
-                self.error_input('Кол-во шагов должно быть положительным')
-        except ValueError:
-            error = True
-            self.error_input('Кол-во шагов должно быть целым')
+    def except_errors(self) -> bool:
+        """
+        Отлавливаем все возможные ошибки
+        :return: True - есть ошибка, False - нет ошибок
+        """
 
-        if float(self.b.text()) <= float(self.x0.text()):
+        error = False
+        try:
+            if float(self.a1.text()) <= 0:
+                error = True
+                self.error_input('Значение параметра a1 должно быть положительным')
+            if float(self.a3.text()) <= 0:
+                error = True
+                self.error_input('Значение параметра a3 должно быть положительным')
+            if float(self.m.text()) <= 0:
+                error = True
+                self.error_input('Значение параметра m должно быть положительным')
+            if float(self.h.text()) <= 0:
+                error = True
+                self.error_input('Шаг должен быть положительным')
+
+            try:
+                if int(self.n.text()) <= 0:
+                    error = True
+                    self.error_input('Кол-во шагов должно быть положительным')
+            except ValueError:
+                error = True
+                self.error_input('Кол-во шагов должно быть целым')
+
+            if float(self.Egr.text()) < 0:
+                error = True
+                self.error_input('Контроль выхода за нижнюю границу для скорости должен быть неотрицательным')
+            if float(self.E.text()) <= 0:
+                error = True
+                self.error_input('Контроль ЛП "сверху" должен быть неотрицательным')
+            if float(self.Emin.text()) <= 0:
+                error = True
+                self.error_input('Контроль ЛП "снизу" должен быть неотрицательным')
+            if float(self.Emin.text()) > float(self.E.text()):
+                error = True
+                self.error_input('Контроль ЛП "сверху" должен быть не меньше контроля ЛП "снизу"')
+        except ValueError:  # Если нельзя перевести строку в float или int
             error = True
-            self.error_input('Правая граница находится левее начала счета')
-        if float(self.Egr.text()) < 0:
-            error = True
-            self.error_input('Контроль выхода за правую границу дожлен быть неотрицательным')
-        if float(self.E.text()) <= 0:
-            error = True
-            self.error_input('Контроль ЛП "сверху" должен быть неотрицательным')
-        if float(self.Emin.text()) <= 0:
-            error = True
-            self.error_input('Контроль ЛП "снизу" должен быть неотрицательным')
-        if float(self.Emin.text()) > float(self.E.text()):
-            error = True
-            self.error_input('Контроль ЛП "сверху" должен быть не меньше контроля ЛП "снизу"')
+            self.error_input('Входные данные должны быть числами с плавающей запятой кроме n, оно должны быть целым')
+
+        return error
+
+    def work(self):
+        error = self.except_errors()
 
         data = {'x0': Decimal(self.x0.text()),
                 'u0': Decimal(self.u0.text()),

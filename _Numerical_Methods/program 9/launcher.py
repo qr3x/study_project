@@ -6,7 +6,7 @@ from decimal import Decimal, getcontext
 # Мои модули
 
 
-# 10 знаков после запятой
+# 10 знаков после запятой для типа Decimal
 getcontext().prec = 10
 
 
@@ -37,15 +37,15 @@ class Analysis(object):
     def count_k1(self, x: Decimal, v: Decimal, h: Decimal) -> Decimal:
         return self.f(x, v)
 
-    def count_k2(self, x: Decimal, v: Decimal, h: Decimal) -> Decimal:
+    def count_k2(self, x: Decimal, v: Decimal, h: Decimal, k1) -> Decimal:
         tmp = h / 2
-        return self.f(x + tmp, v + tmp * self.k1)
+        return self.f(x + tmp, v + tmp * k1)
 
-    def count_k3(self, x: Decimal, v: Decimal, h: Decimal) -> Decimal:
-        return self.f(x + h, v + h * (-self.k1 + 2 * self.k2))
+    def count_k3(self, x: Decimal, v: Decimal, h: Decimal, k1, k2) -> Decimal:
+        return self.f(x + h, v + h * (-k1 + 2 * k2))
 
-    def count_v(self, v: Decimal, h: Decimal) -> Decimal:
-        return v + h / 6 * (self.k1 + 4 * self.k2 + self.k3)
+    def count_v(self, v: Decimal, h: Decimal, k1, k2, k3) -> Decimal:
+        return v + h / 6 * (k1 + 4 * k2 + k3)
 
     def create_message(self, n: int or str, x: list, v: Decimal, b: Decimal, arr_s: list,
                        step_s: list, step_p: list, h: list) -> str:
@@ -92,8 +92,12 @@ class Analysis(object):
             if i == 0:
                 continue
             arr_s[i] = fabs(elem)
-        index_hmin = min(range(len(h[1:])), key=h[1:].__getitem__) + 1
-        index_hmax = max(range(len(h[1:])), key=h[1:].__getitem__) + 1
+        try:
+            index_hmin = min(range(len(h[1:])), key=h[1:].__getitem__) + 1
+            index_hmax = max(range(len(h[1:])), key=h[1:].__getitem__) + 1
+        except ValueError:  # Если в списке тольок '---'
+            index_hmin = 0
+            index_hmax = 0
 
         message = f'{message}</p>' \
                   f'<p>Результат расчета:</p>' \
@@ -145,28 +149,44 @@ class Analysis(object):
             sub = 0   # Кол-во уменьшений шага
             plus = 0  # Кол-во увеличений шага
             while True:
+                """--------------------------------------------Считаем V--------------------------------------------"""
                 # Подсчет коэф. k для метода
                 self.k1 = self.count_k1(arr_xn[-1], arr_vn_res[-1], self.h)
-                self.k2 = self.count_k2(arr_xn[-1], arr_vn_res[-1], self.h)
-                self.k3 = self.count_k3(arr_xn[-1], arr_vn_res[-1], self.h)
+                self.k2 = self.count_k2(arr_xn[-1], arr_vn_res[-1], self.h, self.k1)
+                self.k3 = self.count_k3(arr_xn[-1], arr_vn_res[-1], self.h, self.k1, self.k2)
 
                 # Подсчет X, V
                 x = count_x(arr_xn[-1], self.h)
-                v = self.count_v(arr_vn_res[-1], self.h)
+                v = self.count_v(arr_vn_res[-1], self.h, self.k1, self.k2, self.k3)
 
-                # Подсчет V с крышкой
+                """---------------------------------------Считаем V с крышкой---------------------------------------"""
                 h = self.h / 2
+                # # Работаем с первой половиной шага
+                # Подсчет коэф. k для метода для V с крышкой
+                # Берем последние значения X и V
+                k1 = self.count_k1(arr_xn[-1], arr_vn_res[-1], h)
+                k2 = self.count_k2(arr_xn[-1], arr_vn_res[-1], h, k1)
+                k3 = self.count_k3(arr_xn[-1], arr_vn_res[-1], h, k1, k2)
+
                 x1_2 = count_x(arr_xn[-1], h)
-                v1_2 = self.count_v(arr_vn_res[-1], h)
+                v1_2 = self.count_v(arr_vn_res[-1], h, k1, k2, k3)
+
+                # # Работаем со второй половиной шага
+                # Берем только что подсчитанные X и V, тк они будут последними посчитанными
+                k1 = self.count_k1(x1_2, v1_2, h)
+                k2 = self.count_k2(x1_2, v1_2, h, k1)
+                k3 = self.count_k3(x1_2, v1_2, h, k1, k2)
 
                 x1_2 = count_x(x1_2, h)
-                v1_2 = self.count_v(v1_2, h)
+                v1_2 = self.count_v(v1_2, h, k1, k2, k3)
                 del h
 
+                """--------------------------------------------Оценка ЛП--------------------------------------------"""
                 # Подсчет S*
                 S = (v1_2 - v) / (2 ** self.data['p'] - 1)
                 S = 2 ** self.data['p'] * S
 
+                """--------------------Смотрим расположение S* относительно границ E и E/2^(p+1)--------------------"""
                 if self.cb == 0:    # Контроль погрешности сверху и снизу
                     if S == 0:  # Если оценка погрешности = 0, тогда ничего не делаем (иначе будет постоянно ув. шаг)
                         break
@@ -189,30 +209,34 @@ class Analysis(object):
                         continue
                 else:               # Отказ от контроля погрешности снизу и сверху
                     break
-            if x > self.data['b']:  # Перепрыгнули правую границу (при больших шагах)
+            # Контроль на нижнию границу
+            # Перепрыгнули нижнюю границу для скорости границу (при больших шагах)
+            if self.data['cbV'] == 0 and v < self.data['b'] or \
+               self.data['cbV'] == 1 and v1_2 < self.data['b'] or \
+               self.data['cbV'] == 2 and v + S < self.data['b']:
                 break
+
             arr_n.append(str(n))
             arr_hn_1.append(self.h)
             arr_xn.append(x)
             arr_s.append(S)
-            if v < 0 or v1_2 < 0:
-                v = 0
-                v1_2 = 0
-                S = 0
+            arr_vn.append(v)
+            arr_vn_ud.append(v1_2)
+            arr_step_p.append(plus)
+            arr_step_s.append(sub)
+
+            # Выбор итогового V в зависимости от выбора при старте
             if self.data['cbV'] == 0:
                 arr_vn_res.append(v)
             elif self.data['cbV'] == 1:
                 arr_vn_res.append(v1_2)
             else:
                 arr_vn_res.append(v + S)
-            arr_vn.append(v)
-            arr_vn_ud.append(v1_2)
-            arr_step_p.append(plus)
-            arr_step_s.append(sub)
 
-            # Учет погрешности справа
-            if b_e <= arr_xn[-1] <= self.data['b']:
+            # Контроль на нижнию границу
+            if b_e <= arr_vn_res[-1] <= self.data['b']:
                 # Если попало в этот промежуток => (xn, vn) - последняя точка
+                # => ничего добавлять/удалять не надо, уже все на месте
                 break
 
         message = self.create_message(arr_n[-1], arr_xn, arr_vn_res[-1], self.data['b'], arr_s,
