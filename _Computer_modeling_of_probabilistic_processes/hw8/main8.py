@@ -43,9 +43,9 @@ def main():
             _cls()
             print('Вы ввели не число. Попробуйте снова')
 
-    x = np.linspace(1, 2, n)
-    f1 = 2 / x ** 2
-    F1 = 2 - 2 / x
+    x = np.linspace(0, 2, n)
+    f1 = 2 * np.exp(-2 * x)
+    F1 = 1 - np.exp(-2 * x)
     plt.title('Исх. плотность распределения, функция распределения F')
     plt.plot(x, F1)
     plt.plot(x, f1)
@@ -53,7 +53,7 @@ def main():
     plt.show()
 
     nu = np.random.uniform(0, 1, n)
-    ksi = 2 / (2 - nu)
+    ksi = - 1 / 2 * np.log(1 - nu)
     kl = 1 + int(np.log2(n))
     plt.hist(ksi, kl, density=True, alpha=0.5)
 

@@ -3,10 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="2e01af21-5f04-4120-8f28-81051ee37184" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../../_Algorithms_and_data_structure/mp2-lab1-set" beforeDir="false" afterPath="$PROJECT_DIR$/../../_Algorithms_and_data_structure/mp2-lab1-set" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hw4/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../hw4/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hw4/main4_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/../hw4/main4_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/interface.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/launcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/launcher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../_Numerical_Methods/program 9/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,7 +31,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../hw8" />
   </component>
   <component name="RunManager" selected="Python.6_1">
     <configuration name="6_1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -110,6 +109,10 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
+    <state x="740" y="276" key="FileChooserDialogImpl" timestamp="1635486016606">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="740" y="276" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1635486016606" />
     <state width="1899" height="415" key="GridCell.Tab.0.bottom" timestamp="1633672855336">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
