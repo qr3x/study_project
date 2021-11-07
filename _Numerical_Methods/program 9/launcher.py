@@ -6,8 +6,8 @@ from decimal import Decimal, getcontext
 # Мои модули
 
 
-# 10 знаков после запятой для типа Decimal
-getcontext().prec = 10
+# 40 знаков после запятой для типа Decimal
+getcontext().prec = 40
 
 
 def count_x(x: Decimal, h: Decimal) -> Decimal:
@@ -95,17 +95,17 @@ class Analysis(object):
         try:
             index_hmin = min(range(len(h[1:])), key=h[1:].__getitem__) + 1
             index_hmax = max(range(len(h[1:])), key=h[1:].__getitem__) + 1
-        except ValueError:  # Если в списке тольок '---'
+        except ValueError:  # Если в списке только '---'
             index_hmin = 0
             index_hmax = 0
 
         message = f'{message}</p>' \
                   f'<p>Результат расчета:</p>' \
                   f'<p>N = {n}</p>' \
-                  f'<p>b - x<sub>N</sub> = {b - x[-1]}</p>' \
-                  f'<p>x<sub>N</sub> = {x[-1]}; V<sub>N итог</sub> = {v}</p>' \
-                  f'<p>max|S| = {max(arr_s[1:])}</p>' \
-                  f'<p>min|S| = {min(arr_s[1:])}</p>' \
+                  f'<p>b - v<sub>N</sub> = {round(b - v, 16)}</p>' \
+                  f'<p>x<sub>N</sub> = {x[-1]}; V<sub>N итог</sub> = {round(v, 16)}</p>' \
+                  f'<p>max|S| = {round(max(arr_s[1:]), 16)}</p>' \
+                  f'<p>min|S| = {round(min(arr_s[1:]), 16)}</p>' \
                   f'<p>Всего ум. шага = {sum(step_s[1:])}</p>' \
                   f'<p>Всего ув. шага = {sum(step_p[1:])}</p>' \
                   f'<p>max h<sub>n</sub> = {h[index_hmax]} при x<sub>n+1</sub> = {x[index_hmax]}</p>' \
@@ -144,6 +144,7 @@ class Analysis(object):
         self.h = self.data['h']                  # Шаг
         self.cb = self.data['cb']                # Контроль погрешностей
         b_e = self.data['b'] - self.data['Egr']  # Левая граница промежутка контроля правой границы
+        h_tmp = self.h                           # Шаг, который будет записываться в список
 
         for n in range(1, self.data['n'] + 1):
             sub = 0   # Кол-во уменьшений шага
@@ -187,24 +188,34 @@ class Analysis(object):
                 S = 2 ** self.data['p'] * S
 
                 """--------------------Смотрим расположение S* относительно границ E и E/2^(p+1)--------------------"""
+                """ Для чего нужна h_tmp - чтобы правильно выводить шаг для n-ого номера строки по этим критериям:
+                Если Emin <= |S*| <= E, то принимает точку, шаг не меняем
+                     |S*| <= Emin, то принимает точку, следующий счет точик идет с шагом 2h
+                     |S*| > E, то точку не принимает, считаем ее заново с шагом h/2
+                """
                 if self.cb == 0:    # Контроль погрешности сверху и снизу
                     if S == 0:  # Если оценка погрешности = 0, тогда ничего не делаем (иначе будет постоянно ув. шаг)
                         break
                     if self.data['Emin'] <= fabs(S) <= self.data['E']:
+                        h_tmp = self.h
                         break
                     elif self.data['Emin'] > fabs(S):
+                        h_tmp = self.h
                         self.h = 2 * self.h
                         plus += 1
                         break
                     else:  # |S*| > E
                         self.h = self.h / 2
+                        h_tmp = self.h
                         sub += 1
                         continue
                 elif self.cb == 1:  # Отказ от контроля погрешности снизу
                     if fabs(S) <= self.data['E']:
+                        h_tmp = self.h
                         break
                     else:  # |S*| > E
                         self.h = self.h / 2
+                        h_tmp = self.h
                         sub += 1
                         continue
                 else:               # Отказ от контроля погрешности снизу и сверху
@@ -217,7 +228,7 @@ class Analysis(object):
                 break
 
             arr_n.append(str(n))
-            arr_hn_1.append(self.h)
+            arr_hn_1.append(h_tmp)
             arr_xn.append(x)
             arr_s.append(S)
             arr_vn.append(v)

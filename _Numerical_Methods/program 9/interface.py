@@ -18,7 +18,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 # Числа с плавающей запятой
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 
 # Мои модули
@@ -182,7 +182,7 @@ class Window(object):
         label_control.setStyleSheet('font-size: 9pt;')
 
         label_n = QLabel('n    &#160;&#160;<sub>&#160;</sub>')
-        label_n.setToolTip('Счетчик шагов')
+        label_n.setToolTip('Максимальное количество шагов')
         self.n = QLineEdit()
         self.n.setFixedHeight(25)
         self.n.setText('10000')
@@ -215,14 +215,26 @@ class Window(object):
         self.E = QLineEdit()
         self.E.setFixedHeight(25)
         self.E.setText('0.000005')
+
         box_E = QHBoxLayout()
         box_E.addWidget(label_E)
         box_E.addWidget(self.E)
+
+        def editEmin():
+            try:
+                tmp = float_to_str(float(self.E.text()) / 2 ** (self.p + 1))
+            except ValueError:
+                tmp = 'Недопустимое значение'
+
+            self.Emin.setText(tmp)
 
         label_Emin = QLabel()
         label_Emin.setText('E<sub>min</sub>')
         label_Emin.setToolTip('Параметр контроля локальной погрешности "снизу"')
         self.Emin = QLineEdit()
+        self.Emin.setToolTip('Формируется автоматически при заполнение E. Emin = E / 2^(p + 1)')
+        self.Emin.setReadOnly(True)
+        self.Emin.setStyleSheet('QLineEdit { background: rgba(146, 145, 145, 0); }')
         tmp = float(self.E.text()) / 2 ** (self.p + 1)
         self.Emin.setFixedHeight(25)
         self.Emin.setText(float_to_str(tmp))
@@ -230,6 +242,8 @@ class Window(object):
         box_Emin = QHBoxLayout()
         box_Emin.addWidget(label_Emin)
         box_Emin.addWidget(self.Emin)
+
+        self.E.textEdited.connect(editEmin)
 
         self.combobox = QComboBox()
         self.combobox.setFixedHeight(25)
@@ -303,9 +317,9 @@ class Window(object):
         self.table.setFixedSize(900, 400)
 
         self.table.setFrameStyle(QFrame.NoFrame)
-        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        header = ['N', 'Hn-1', 'Xn',
+        header = ['N', 'H', 'Xn',
                   'Vn', 'Vn удв',
                   'S*', 'Vn итог',
                   'Ум.шага', 'Ув.шага']
@@ -454,6 +468,10 @@ class Window(object):
 
         error = False
         try:
+            if float(self.u0.text()) <= 0:
+                error = True
+                self.error_input('Значение начальной скорости u0 должно быть положительным')
+
             if float(self.a1.text()) <= 0:
                 error = True
                 self.error_input('Значение параметра a1 должно быть положительным')
@@ -481,6 +499,9 @@ class Window(object):
             if float(self.E.text()) <= 0:
                 error = True
                 self.error_input('Контроль ЛП "сверху" должен быть неотрицательным')
+            if self.Emin.text() == 'Недопустимое значение':
+                error = True
+                self.error_input('Недопустимое значение Emin')
             if float(self.Emin.text()) <= 0:
                 error = True
                 self.error_input('Контроль ЛП "снизу" должен быть неотрицательным')
@@ -496,22 +517,22 @@ class Window(object):
     def work(self):
         error = self.except_errors()
 
-        data = {'x0': Decimal(self.x0.text()),
-                'u0': Decimal(self.u0.text()),
-                'a1': Decimal(self.a1.text()),
-                'a3': Decimal(self.a3.text()),
-                'm': Decimal(self.m.text()),
-                'h': Decimal(self.h.text()),
-                'n': int(self.n.text()),
-                'b': Decimal(self.b.text()),
-                'Egr': Decimal(self.Egr.text()),
-                'E': Decimal(self.E.text()),
-                'Emin': Decimal(self.Emin.text()),
-                'cb': int(self.combobox.currentIndex()),
-                'cbV': int(self.comboboxV.currentIndex()),
-                'p': self.p}
-
         if not error:
+            data = {'x0': Decimal(self.x0.text()),
+                    'u0': Decimal(self.u0.text()),
+                    'a1': Decimal(self.a1.text()),
+                    'a3': Decimal(self.a3.text()),
+                    'm': Decimal(self.m.text()),
+                    'h': Decimal(self.h.text()),
+                    'n': int(self.n.text()),
+                    'b': Decimal(self.b.text()),
+                    'Egr': Decimal(self.Egr.text()),
+                    'E': Decimal(self.E.text()),
+                    'Emin': Decimal(self.Emin.text()),
+                    'cb': int(self.combobox.currentIndex()),
+                    'cbV': int(self.comboboxV.currentIndex()),
+                    'p': self.p}
+
             analysis = Analysis(data)
             del data
             data = analysis.work()
