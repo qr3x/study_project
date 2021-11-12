@@ -90,6 +90,4 @@ if __name__ == '__main__':
             _cls()
             print('Вы ввели не число. Попробуйте снова')
 
-    a = 0
-    b = 2
     measure_the_time(main, (a, b))
