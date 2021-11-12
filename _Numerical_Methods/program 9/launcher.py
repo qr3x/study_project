@@ -99,18 +99,24 @@ class Analysis(object):
             index_hmin = 0
             index_hmax = 0
 
-        message = f'{message}</p>' \
-                  f'<p>Результат расчета:</p>' \
-                  f'<p>N = {n}</p>' \
-                  f'<p>b - v<sub>N</sub> = {round(b - v, 16)}</p>' \
-                  f'<p>x<sub>N</sub> = {x[-1]}; V<sub>N итог</sub> = {round(v, 16)}</p>' \
-                  f'<p>max|S| = {round(max(arr_s[1:]), 16)}</p>' \
-                  f'<p>min|S| = {round(min(arr_s[1:]), 16)}</p>' \
-                  f'<p>Всего ум. шага = {sum(step_s[1:])}</p>' \
-                  f'<p>Всего ув. шага = {sum(step_p[1:])}</p>' \
-                  f'<p>max h<sub>n</sub> = {h[index_hmax]} при x<sub>n+1</sub> = {x[index_hmax]}</p>' \
-                  f'<p>min h<sub>n</sub> = {h[index_hmin]} при x<sub>n+1</sub> = {x[index_hmin]}</p>' \
-                  f'<p>--------------------------------------------------------------------------------------------</p>'
+        message += f'</p>' \
+                   f'<p>Результат расчета:</p>' \
+                   f'<p>N = {n}</p>' \
+                   f'<p>b - v<sub>N</sub> = {round(b - v, 16)}</p>' \
+                   f'<p>x<sub>N</sub> = {x[-1]}; V<sub>N итог</sub> = {round(v, 16)}</p>'
+
+        try:
+            message += f'<p>max|S| = {round(max(arr_s[1:]), 16)}</p>' \
+                       f'<p>min|S| = {round(min(arr_s[1:]), 16)}</p>'
+        except ValueError:
+            message += f'<p>max|S| = {arr_s[0]}</p>' \
+                       f'<p>min|S| = {arr_s[0]}</p>'
+
+        message += f'<p>Всего ум. шага = {sum(step_s[1:])}</p>' \
+                   f'<p>Всего ув. шага = {sum(step_p[1:])}</p>' \
+                   f'<p>max h<sub>n</sub> = {h[index_hmax]} при x<sub>n+1</sub> = {x[index_hmax]}</p>' \
+                   f'<p>min h<sub>n</sub> = {h[index_hmin]} при x<sub>n+1</sub> = {x[index_hmin]}</p>' \
+                   f'<p>-------------------------------------------------------------------------------------------</p>'
 
         return message
 
@@ -143,8 +149,9 @@ class Analysis(object):
         """ Переменные """
         self.h = self.data['h']                  # Шаг
         self.cb = self.data['cb']                # Контроль погрешностей
-        b_e = self.data['b'] - self.data['Egr']  # Левая граница промежутка контроля правой границы
+        b_e = self.data['b'] + self.data['Egr']  # Левая граница промежутка контроля правой границы
         h_tmp = self.h                           # Шаг, который будет записываться в список
+        cb_tmp = -1
 
         for n in range(1, self.data['n'] + 1):
             sub = 0   # Кол-во уменьшений шага
@@ -194,16 +201,14 @@ class Analysis(object):
                      |S*| > E, то точку не принимает, считаем ее заново с шагом h/2
                 """
                 if self.cb == 0:    # Контроль погрешности сверху и снизу
-                    if S == 0:  # Если оценка погрешности = 0, тогда ничего не делаем (иначе будет постоянно ув. шаг)
-                        break
                     if self.data['Emin'] <= fabs(S) <= self.data['E']:
                         h_tmp = self.h
-                        break
+                        pass
                     elif self.data['Emin'] > fabs(S):
                         h_tmp = self.h
                         self.h = 2 * self.h
                         plus += 1
-                        break
+                        pass
                     else:  # |S*| > E
                         self.h = self.h / 2
                         h_tmp = self.h
@@ -212,19 +217,26 @@ class Analysis(object):
                 elif self.cb == 1:  # Отказ от контроля погрешности снизу
                     if fabs(S) <= self.data['E']:
                         h_tmp = self.h
-                        break
+                        pass
                     else:  # |S*| > E
                         self.h = self.h / 2
                         h_tmp = self.h
                         sub += 1
                         continue
                 else:               # Отказ от контроля погрешности снизу и сверху
-                    break
-            # Контроль на нижнию границу
-            # Перепрыгнули нижнюю границу для скорости границу (при больших шагах)
-            if self.data['cbV'] == 0 and v < self.data['b'] or \
-               self.data['cbV'] == 1 and v1_2 < self.data['b'] or \
-               self.data['cbV'] == 2 and v + S < self.data['b']:
+                    pass
+
+                # Контроль на нижнию границу
+                # Перепрыгнули нижнюю границу для скорости границу (при больших шагах)
+                if self.data['cbV'] == 0 and v < self.data['b'] or \
+                   self.data['cbV'] == 1 and v1_2 < self.data['b'] or \
+                   self.data['cbV'] == 2 and v + S < self.data['b']:
+                    if cb_tmp == -1:
+                        cb_tmp, self.cb = self.cb, 2
+                    self.h = self.h / 2
+                    h_tmp = self.h
+                    sub += 1
+                    continue
                 break
 
             arr_n.append(str(n))
@@ -245,9 +257,10 @@ class Analysis(object):
                 arr_vn_res.append(v + S)
 
             # Контроль на нижнию границу
-            if b_e <= arr_vn_res[-1] <= self.data['b']:
+            if b_e >= arr_vn_res[-1] >= self.data['b']:
                 # Если попало в этот промежуток => (xn, vn) - последняя точка
                 # => ничего добавлять/удалять не надо, уже все на месте
+                self.cb = cb_tmp
                 break
 
         message = self.create_message(arr_n[-1], arr_xn, arr_vn_res[-1], self.data['b'], arr_s,

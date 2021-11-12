@@ -64,9 +64,19 @@ class Window(object):
         self.rkm = QAction('&О методе')
         self.rkm.triggered.connect(self.rungeKutta_method)
 
+        # Кнопка "Очистить график"
+        self.clearGr = QAction('&Очистить график')
+        self.clearGr.triggered.connect(self.clearGraph)
+
+        # Кнопка "Очистить справку"
+        self.clearRe = QAction('&Очистить справку')
+        self.clearRe.triggered.connect(self.clearReference)
+
         menubar.addAction(self.workMenu)
         menubar.addAction(self.conditionMenu)
         menubar.addAction(self.rkm)
+        menubar.addAction(self.clearGr)
+        menubar.addAction(self.clearRe)
 
         # Настраиваем макет
         self.initUI()
@@ -84,8 +94,8 @@ class Window(object):
         """-----------------------------------------Гланый блок с подблоками-----------------------------------------"""
         main = QWidget(self.window)
         mainHBox1 = QHBoxLayout()
-        mainHBox2 = QHBoxLayout()
-        mainHBox2.setSpacing(21)
+        self.mainHBox2 = QHBoxLayout()
+        self.mainHBox2.setSpacing(21)
         mainVBox = QVBoxLayout()
 
         """-------------------------------------------Блок с настройками---------------------------------------------"""
@@ -368,11 +378,11 @@ class Window(object):
         mainHBox1.addWidget(option)
         mainHBox1.addWidget(reference)
 
-        mainHBox2.addWidget(self.table)
-        mainHBox2.addWidget(self.canvas)
+        self.mainHBox2.addWidget(self.table)
+        self.mainHBox2.addWidget(self.canvas)
 
         mainVBox.addLayout(mainHBox1)
-        mainVBox.addLayout(mainHBox2)
+        mainVBox.addLayout(self.mainHBox2)
 
         main.setLayout(mainVBox)
 
@@ -425,6 +435,35 @@ class Window(object):
         self.dialog_message.setWindowIcon(QIcon('options\\favicon.ico'))
         self.dialog_message.setText(message)
         self.dialog_message.exec()
+
+    def clearGraph(self):
+
+        class mlpCanvas(FigureCanvas):
+            """
+            Чтобы нарисовать новый график, нужно объект.plot(list, list)
+            """
+
+            def __init__(self, width=5, height=4, dpi=100):
+                # Задаем размеры
+                fig = Figure(figsize=(width, height), dpi=dpi)
+                FigureCanvas.__init__(self, fig)
+                self.ax = self.figure.add_subplot(111)
+                self.ax.set_title('Зависимость скорости от времени')
+                self.ax.set_xlabel('Время')
+                self.ax.set_ylabel('Скорость')
+                FigureCanvas.updateGeometry(self)
+
+            def plot(self, x: list, y: list):
+                self.ax.plot(x, y)
+                self.draw_idle()
+
+        self.mainHBox2.removeWidget(self.canvas)
+        self.canvas = mlpCanvas()
+        self.mainHBox2.addWidget(self.canvas)
+        self.window.show()
+
+    def clearReference(self):
+        self.textarea.setPlainText('')
 
     def error_input(self, message):
         """
