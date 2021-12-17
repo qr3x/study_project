@@ -122,6 +122,8 @@ def plotNodes(rhs, nodes: list or tuple):
                 print(f"Собственные вектора:\n{vectors}")
                 plot(rhs, times, (node['x'] + vectors[0][0] / 100, node['y'] + vectors[0][1] / 100), 'y-')
                 plot(rhs, times, (node['x'] + vectors[1][0] / 100, node['y'] + vectors[1][1] / 100), 'y-')
+                plot(rhs, times, (node['x'] - vectors[0][0] / 100, node['y'] - vectors[0][1] / 100), 'y-')
+                plot(rhs, times, (node['x'] - vectors[1][0] / 100, node['y'] - vectors[1][1] / 100), 'y-')
         plot(rhs, times, (node['x'], node['y']), style)
     print('---------------------Следующий ФП---------------------')
 
@@ -164,28 +166,32 @@ def plotX(rhx, times: list or tuple, point: list or tuple, style: str, title: st
 if __name__ == '__main__':
     """ --------------------------------------------------- lab1 --------------------------------------------------- """
 
-    # rhs = fp()
-    # lim = ((-2.5, 2.5), (-3., 3.))
-    # limP = (0., 20.)
-    # states = [{'x': -2., 'y': 0, 'stable': False}, {'x': -1., 'y': 0, 'stable': True},
-    #           {'x': 1., 'y': 0, 'stable': False}, {'x': 2., 'y': 0, 'stable': True}]
-    #
-    # # Рисуем векторное поле
-    # plotVectors(rhs, lim)
-    # # Рисуем состояния равновесия (если седло, то ещё и сепаратрисы)
-    # plotNodes_conSys(rhs, states)
-    # # Рисуем Бесконечные траектории
-    # plot(rhs, limP, (0., 0.), 'r-')
-    # plot(rhs, limP, (0.5, 0.), 'r-')
-    # plot(rhs, limP, (-2.3, 0.), 'r-')
-    # plot(rhs, limP, (2.5, 0.), 'r-')
-    # # Рисуем замкнутые траектории
-    # plot(rhs, limP, (-0.75, 0.), 'g-')
-    # plot(rhs, limP, (-0.5, 0.), 'g-')
-    # plot(rhs, limP, (1.3, 0.), 'g-')
-    # plot(rhs, limP, (1.75, 0.), 'g-')
-    #
-    # plt.show()
+    rhs = fp()
+    lim = ((-2.5, 2.5), (-3., 3.))
+    limP = (0., 20.)
+    states = [{'x': -2., 'y': 0, 'stable': False}, {'x': -1., 'y': 0, 'stable': True},
+              {'x': 1., 'y': 0, 'stable': False}, {'x': 2., 'y': 0, 'stable': True}]
+
+    # Рисуем векторное поле
+    plotVectors(rhs, lim)
+    # Рисуем состояния равновесия (если седло, то ещё и сепаратрисы)
+    plotNodes_conSys(rhs, states)
+    # Рисуем Бесконечные траектории
+    plot(rhs, limP, (0., 0.), 'r-')
+    plot(rhs, limP, (0.5, 0.), 'r-')
+    plot(rhs, limP, (-2.3, 0.), 'r-')
+    plot(rhs, limP, (2.5, 0.), 'r-')
+    # Рисуем замкнутые траектории
+    plot(rhs, limP, (-0.75, 0.), 'g-')
+    plot(rhs, limP, (-0.5, 0.), 'g-')
+    plot(rhs, limP, (1.3, 0.), 'g-')
+    plot(rhs, limP, (1.75, 0.), 'g-')
+
+    plt.show()
+
+    plotX(rhs, limP, (-2.0070710678, 0.0070710678), 'r-', 'x(t) для СР=(-2, 0). Левая верхн траект')
+    plotX(rhs, limP, (-2.0070710678, -0.0070710678), 'r-', 'x(t) для СР=(-2, 0). Левая нижн траектория')
+    plotX(rhs, limP, (2.0070710678, 0.0070710678), 'g-', 'x(t) для СР=(-2, 0). Замкнутая правая траектория')
 
     """ --------------------------------------------------- lab2 --------------------------------------------------- """
 
@@ -261,4 +267,5 @@ if __name__ == '__main__':
         plt.xlabel('t')
         plt.ylabel('x')
         
-        plotX(rhs, time, (0, 2.), 'r-', 'x(t) для СР=(-1, 0)')
+        plotX(rhs, time, (0, 2.), 'r-', 'x(t) для СР=(-1, 0) т.(0, 0.2)')
+        plotX(rhs, time, (2, 1), 'r-', 'x(t) для СР=(2, 0) т.(2, 1)')
