@@ -3,10 +3,10 @@ class RegularTill(object):
     Обычные кассы
 
     max_count - максимальное количество обычных касс
-    count     - открыто касс в данный момент времени
-    speed     - количество продуктов, которые обслуживает касса за единицу времени
+    count - открыто касс в данный момент времени
+    speed - количество продуктов, которые обслуживает касса за единицу времени
 
-    queue     - очереди для касс
+    queue - очереди для касс
     """
 
     def __init__(self, max_count: int):
@@ -15,7 +15,7 @@ class RegularTill(object):
         """
         self.max_count = max_count
         self.count = 0
-        self.intensity = 10
+        self.intensity = 12.
 
         self.tills = []
         for number in range(max_count):
@@ -33,12 +33,13 @@ class RegularTill(object):
         else:
             print('все кассы открыты')
 
-    def close_till(self, index=-1) -> None:
+    def close_till(self, index=-1) -> str:
+        result = ''
         # Если выбрана касса, которую нужно закрыть - закрываем ее
         if index != -1:
             self.count -= 1
             self.tills[index]['open'] = False
-            print('Закрыли кассу')
+            result = 'Закрыли кассу'
         # Если поступило условие, что нужно закрыть кассу, но не какую-то определенную, то ищем кассу,
         # которая открыта и где нет покупателей
         else:
@@ -46,8 +47,10 @@ class RegularTill(object):
                 if till['open'] and till['queue'] == []:
                     self.count -= 1
                     till['open'] = False
-                    print('Закрыли кассу')
-            print('Нет касс, которые можно закрыть (На них ещё есть покупатели)')
+                    result = 'Закрыли кассу'
+            result = 'Нет касс, которые можно закрыть (На них ещё есть покупатели)'
+
+        return result
 
     def add_customer(self, index: int, customer) -> None:
         self.queue[index].append(customer)
@@ -57,8 +60,8 @@ class SelfServiceTill(object):
     """
     Кассы самообслуживания
 
-    count     - количество касс самообслуживания
-    speed     - количество продуктов, которые обслуживает касса за единицу времени
+    count - количество касс самообслуживания
+    speed - количество продуктов, которые обслуживает касса за единицу времени
 
     queue - общая очередь для всех касс
     """
@@ -68,7 +71,7 @@ class SelfServiceTill(object):
         :param count: количество касс самообслуживания
         """
         self.count = count
-        self.intensity = 14  # 2 кассы с интенсивность 7
+        self.intensity = 16  # 2 кассы с интенсивность 8
 
         self.queue = [[]]
 

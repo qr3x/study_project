@@ -4,7 +4,7 @@ import numpy as np
 
 
 def main():
-    N = 1000000
+    N = 10000
 
     liam = 1
     p = 0.01

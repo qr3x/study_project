@@ -1,12 +1,7 @@
 """
-+ 1. Покупатели приходят в любой промежут (0t, 0.1t и тд). Задать лямбда,
-+ 2. Стратегия отркрывания, закрывания касс (допустим когда 3 человек в очереди, открывать новую кассу)
-+ 3. Поварьировать интенсивность касс
-+ 4. почитать методичку. Пункт 1.2
-
-сделать так, чтобы покупатель мог приходить в любой промежуток, а не только под начало периодов 0t, 1t и тп
-чтобы он пришел, допустим в 6.3, тогда касса его обслужит за интенсивность делаеное на что-то (в общем чтобы была связь
-между интенсивностью и оставшимся временем)
+1. Средняя время нахождения человека в очереди
+2. Средняя длина очереди
+3. "Поварьировать" переменные по этим исследованиям
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,23 +22,26 @@ def get_clients(n: int) -> np.array:
     """
     >> Задаем распределение Пуассона для получение кол-во человек, пришедших в промежутки времени
     LIAMBDA - параметр лямбда для распределения Пуассона
-    size=n + 1 - Сколько промежутков - такой и размер, т.е. мы создаем кол-во людей пришедших в каждый промежуток
+    size=n - Сколько промежутков - такой и размер, т.е. мы создаем кол-во людей пришедших в каждый промежуток
 
     >> Для каждого покупателя выбираем случайное кол-во продуктов, которые он хочет купить в диапозоне
        от 1 до MAX_PRODUCTS
 
     >> Сопоставляем продукты к каждому покупателю
     :param n: кол-во временных промежутков
-    :return:
+    :return: массив покупателей
     """
 
     customers_tmp = st.poisson.rvs(LIAMBDA, size=n)
-    products = np.array([np.random.randint(1, MAX_PRODUCTS) for i in range(sum(customers_tmp))])
 
     customers = np.array([])
-    for i, count_cust in enumerate(customers_tmp):
-        tmp = sum(customers_tmp[:i])  # Находим диапозон, который нужно взять из products
-        customers = np.append(customers, {'count': count_cust, 'products': products[tmp:tmp+count_cust]})
+    for count_cust in customers_tmp:
+        products = np.array([np.random.randint(1, MAX_PRODUCTS) for j in range(count_cust)])
+        products = np.array(products, dtype=float)
+        moments = np.array(sorted([np.random.random() for j in range(count_cust)]))
+        customers = np.append(customers, {'count': count_cust,
+                                          'products': products,
+                                          'moments': moments})
 
     return customers
 
@@ -93,26 +91,35 @@ def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> None:
     """
 
     def sub(tills: RegularTill or SelfServiceTill, index: int) -> None:
-        intensity = tills.intensity  # Получаем интенсивность кассы
+        general_intensity = tills.intensity  # Получаем интенсивность кассы
+        general_moment = 0
         pops = 0
-        length = len(tills.queue[index])
-        for i in range(length):
-            if intensity >= tills.queue[index][i]:  # если интенсивность больше, чем продуктов у покупателя
-                intensity -= tills.queue[index][i]
-                pops += 1  # Счетчик удаления обслуженных клиентов
-                # Если это был последний клиент и интенсивность больше, чем товаров,
-                # то просто убираем клиента из очереди, тк обслужили
-                if length == pops:
-                    for pop in range(pops - 1, -1, -1):
-                        tills.queue[index].pop(pop)
+
+        for i, customer in enumerate(tills.queue[index]):
+            product = customer['products']
+            moment = customer['moments']
+            moment = moment if moment > general_moment else general_moment
+            intensity = general_intensity * (1 - moment)
+
+            # если интенсивность больше, чем продуктов у покупателя
+            if intensity >= product:
+                pops += 1                                           # счетчик удаления обслуженных клиентов
+                intensity -= product                                # считаем, сколько ещё товаров можем обслужить
+                general_moment = 1 - intensity / general_intensity  # высчитываем, какой сейчас момент времени
+
+                # если последний элемент
+                if pops == len(tills.queue[index]):
                     break
+            # если интенсивности не хватает, чтобы обслужить этого клиента
             else:
-                # если интенсивности не хватает, чтобы обслужить этого клиента,
-                # то удаляем из очереди тех, кого обслужили, а этого дообслужат в следующий промежуток времени
-                tills.queue[index][i] -= intensity
-                for pop in range(pops - 1, -1, -1):
-                    tills.queue[index].pop(pop)
-                break
+                tills.queue[index][i]['products'] -= intensity
+
+        for i, customer in enumerate(tills.queue[index]):
+            tills.queue[index][i]['moments'] = 0
+
+        # убираем из очереди обслуженных людей
+        for pop in range(pops - 1, -1, -1):
+            tills.queue[index].pop(pop)
 
     for i in range(reg_tills.count):
         sub(reg_tills, i)
@@ -126,9 +133,6 @@ def check_open_close_tills(reg_tills: RegularTill, ss_tills: SelfServiceTill) ->
     :param reg_tills: объект общих касс
     :param ss_tills: объект касс самобслуживания
     """
-
-    # Общ интенсивность = кол-во обычных касс * на их интенсивность + кол-во касс самообслуживания * на их интенсивность
-    general_intensity = reg_tills.count * reg_tills.intensity + ss_tills.count + ss_tills.intensity
 
     # Смотрим на обычные кассы
     for queue in reg_tills.queue:
@@ -148,12 +152,12 @@ def check_open_close_tills(reg_tills: RegularTill, ss_tills: SelfServiceTill) ->
 
 def main(n: int) -> dict:
     """ Сбор для графиков и таблиц """
-    queue_reg_1 = []
-    queue_reg_2 = []
-    queue_ss = []
+    queue_reg_1 = []  # Очередь в первую кассу
+    queue_reg_2 = []  # Очередь во вторую кассу
+    queue_ss = []     # Общая очередь в кассы самообслуживания
 
-    open_reg_1 = []
-    open_reg_2 = []
+    open_reg_1 = []   # Открыта ли 1ая касса
+    open_reg_2 = []   # Открыта ли 2ая касса
     """ -------------------------- """
 
     # Создаем объекты касс
@@ -163,7 +167,6 @@ def main(n: int) -> dict:
     # Получаем входной поток клиентов с их заказами
     customers = get_clients(n)
 
-    print(customers)
     for timeframe in range(len(customers)):
         # Добавляем данные для графиков и таблиц
 
@@ -171,12 +174,10 @@ def main(n: int) -> dict:
         open_reg_2.append(regular_tills.tills[1]['open'])
 
         products = np.array([])
-        for i, product in enumerate(customers[timeframe]['products']):
+        for i, (product, moment) in enumerate(zip(customers[timeframe]['products'], customers[timeframe]['moments'])):
             products = np.append(products, product)
             till, index = queuing_strategy(regular_tills, selfservice_tills)
-            till.add_customer(index, product)
-        print(regular_tills.queue)
-        print(selfservice_tills.queue)
+            till.add_customer(index, {'products': product, 'moments': moment})
 
         # Смотрим стоит ли открывать или закрывать кассы
         check_open_close_tills(regular_tills, selfservice_tills)
@@ -189,6 +190,7 @@ def main(n: int) -> dict:
 
     return {'times': [i for i in range(len(customers))],
             'products': [customers[timeframe]['products'] for timeframe in range(len(customers))],
+            'moments': [customers[timeframe]['moments'] for timeframe in range(len(customers))],
             'queue_reg_1': queue_reg_1, 'open_reg_1': open_reg_1,
             'queue_reg_2': queue_reg_2, 'open_reg_2': open_reg_2,
             'queue_ss': queue_ss}
@@ -199,7 +201,7 @@ if __name__ == '__main__':
 
     LIAMBDA = 3
     MAX_QUEUE = 3
-    MAX_PRODUCTS = 10
+    MAX_PRODUCTS = 8
 
     # Ввод с отловом ошибок
     while True:
@@ -211,16 +213,99 @@ if __name__ == '__main__':
             print('Вы ввели не число. Попробуйте снова')
 
     data = main(n)
-    table = PrettyTable()
-    table.field_names = ['t', 'Входной поток', 'Общая очередь', 'Очередь в 1ую обычную кассу', 'Открыта ли 1ая касса',
-                         'Очередь в 2ую обычную кассу', 'Открыта ли 2ая касса', 'Общая очередь в кассы самообслуживания']
 
+    """ --------------------------------------------------Таблица-------------------------------------------------- """
+    table = PrettyTable()
+    table.field_names = ['t', 'Входной поток', 'Момент, в который пришли', 'Общая очередь',
+                         'Очередь в 1ую обычную кассу', 'Открыта ли 1ая касса',
+                         'Очередь в 2ую обычную кассу', 'Открыта ли 2ая касса',
+                         'Общая очередь в кассы самообслуживания']
+
+    count_queue_reg_1__client = []
+    count_queue_reg_2__client = []
+    count_queue_ss__client = []
+    count_queue_reg_1__products = []
+    count_queue_reg_2__products = []
+    count_queue_ss__products = []
     for i in range(data['times'][-1] + 1):
-        queue_reg_1 = data['queue_reg_1'][i]
-        queue_reg_2 = data['queue_reg_2'][i]
-        queue_ss = data['queue_ss'][i]
-        table.add_row([f"{data['times'][i]}t", data['products'][i], sum(queue_reg_1) + sum(queue_reg_2) + sum(queue_ss),
-                       f'{sum(queue_reg_1)} {queue_reg_1}', data['open_reg_1'][i],
-                       f'{sum(queue_reg_2)} {queue_reg_2}', data['open_reg_2'][i],
-                       f'{sum(queue_ss)} {queue_ss}'])
+        """ ---------------------------------------------Первая очередь--------------------------------------------- """
+
+        queue_reg_1__products = []
+        for client in data['queue_reg_1'][i]:
+            queue_reg_1__products.append(client['products'])
+
+        queue_reg_1__moments = []
+        for client in data['queue_reg_1'][i]:
+            queue_reg_1__moments.append(client['moments'])
+        count_queue_reg_1__client.append(len(queue_reg_1__products))
+        count_queue_reg_1__products.append(sum(queue_reg_1__products))
+
+        """ ---------------------------------------------Вторая очередь--------------------------------------------- """
+
+        queue_reg_2__products = []
+        for client in data['queue_reg_2'][i]:
+            queue_reg_2__products.append(client['products'])
+
+        queue_reg_2__moments = []
+        for client in data['queue_reg_2'][i]:
+            queue_reg_2__moments.append(client['moments'])
+        count_queue_reg_2__client.append(len(queue_reg_2__products))
+        count_queue_reg_2__products.append(sum(queue_reg_2__products))
+
+        """ ----------------------------------------Очередь самообслуживания---------------------------------------- """
+
+        queue_ss__products = []
+        for client in data['queue_ss'][i]:
+            queue_ss__products.append(client['products'])
+
+        queue_ss__moments = []
+        for client in data['queue_ss'][i]:
+            queue_ss__moments.append(client['moments'])
+        count_queue_ss__client.append(len(queue_ss__products))
+        count_queue_ss__products.append(sum(queue_ss__products))
+
+        table.add_row([f"{data['times'][i]}t", data['products'][i], data['moments'][i],
+                       sum(queue_reg_1__products) + sum(queue_reg_2__products) + sum(queue_ss__products),
+                       f'{sum(queue_reg_1__products)} {queue_reg_1__products}', data['open_reg_1'][i],
+                       f'{sum(queue_reg_2__products)} {queue_reg_2__products}', data['open_reg_2'][i],
+                       f'{sum(queue_ss__products)} {queue_ss__products}'])
+
     print(table)
+
+    count_open_req_1 = 0
+    count_open_req_2 = 0
+    count_open_req_1_and_2 = 0
+    for i in range(data['times'][-1] + 1):
+        if data['open_reg_1'][i]:
+            count_open_req_1 += 1
+            if data['open_reg_2'][i]:
+                count_open_req_1_and_2 += 1
+        if data['open_reg_2'][i]:
+            count_open_req_2 += 1
+    text = f'Кол-во промежутков, когда была открыта 1ая обычная касса: {count_open_req_1}\n' + \
+           f'Кол-во промежутков, когда была открыта 2ая обычная касса: {count_open_req_2}\n' + \
+           f'Кол-во промежутков, когда были открыты все обычные кассы: {count_open_req_1_and_2}'
+    print(text)
+
+    """ --------------------------------------------------Графики-------------------------------------------------- """
+
+    x = [i for i in range(data['times'][-1] + 1)]
+
+    plt.title('Загруженность касс (Кол-во людей)')
+    plt.plot(x, [count_queue_reg_1__client[i] + count_queue_reg_2__client[i] + count_queue_ss__client[i] for i in
+                 range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
+    plt.plot(x, count_queue_reg_1__client, 'b-', label='Очередь первой обычной кассы')
+    plt.plot(x, count_queue_reg_2__client, 'g-', label='Очередь второй обычной кассы')
+    plt.plot(x, count_queue_ss__client, 'y-', label='Очередь касс самообслуживания')
+    plt.legend()
+    plt.show()
+
+    plt.title('Загруженность касс (Кол-во продуктов)')
+    plt.plot(x, [count_queue_reg_1__products[i] + count_queue_reg_2__products[i] + count_queue_ss__products[i] for i in
+                 range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
+    plt.plot(x, count_queue_reg_1__products, 'b-', label='Очередь первой обычной кассы')
+    plt.plot(x, count_queue_reg_2__products, 'g-', label='Очередь второй обычной кассы')
+    plt.plot(x, count_queue_ss__products, 'y-', label='Очередь касс самообслуживания')
+    plt.legend()
+    plt.show()
+
