@@ -15,7 +15,7 @@ class RegularTill(object):
         """
         self.max_count = max_count
         self.count = 0
-        self.intensity = 12.
+        self.intensity = 15.
 
         self.tills = []
         for number in range(max_count):
@@ -23,7 +23,7 @@ class RegularTill(object):
             self.tills.append({'open': False, 'queue': []})
         self.queue = [self.tills[i]['queue'] for i in range(self.max_count)]
 
-    def open_till(self) -> None:
+    def open_till(self) -> str:
         for till in self.tills:
             # Если касса закрыта
             if not till['open']:
@@ -31,7 +31,7 @@ class RegularTill(object):
                 till['open'] = True
                 break
         else:
-            print('все кассы открыты')
+            return 'все кассы открыты'
 
     def close_till(self, index=-1) -> str:
         result = ''
@@ -71,7 +71,7 @@ class SelfServiceTill(object):
         :param count: количество касс самообслуживания
         """
         self.count = count
-        self.intensity = 16  # 2 кассы с интенсивность 8
+        self.intensity = 20.  # 2 кассы с интенсивность 8
 
         self.queue = [[]]
 
