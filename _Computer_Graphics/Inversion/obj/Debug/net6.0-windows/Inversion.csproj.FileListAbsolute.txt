@@ -1,0 +1,17 @@
+D:\programming\study_project\_Computer_Graphics\Inversion\bin\Debug\net6.0-windows\Inversion.exe
+D:\programming\study_project\_Computer_Graphics\Inversion\bin\Debug\net6.0-windows\Inversion.deps.json
+D:\programming\study_project\_Computer_Graphics\Inversion\bin\Debug\net6.0-windows\Inversion.runtimeconfig.json
+D:\programming\study_project\_Computer_Graphics\Inversion\bin\Debug\net6.0-windows\Inversion.dll
+D:\programming\study_project\_Computer_Graphics\Inversion\bin\Debug\net6.0-windows\Inversion.pdb
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.csproj.AssemblyReference.cache
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.Form1.resources
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.csproj.GenerateResource.cache
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.GeneratedMSBuildEditorConfig.editorconfig
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.AssemblyInfoInputs.cache
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.AssemblyInfo.cs
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.csproj.CoreCompileInputs.cache
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.dll
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\refint\Inversion.dll
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.pdb
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\Inversion.genruntimeconfig.cache
+D:\programming\study_project\_Computer_Graphics\Inversion\obj\Debug\net6.0-windows\ref\Inversion.dll
