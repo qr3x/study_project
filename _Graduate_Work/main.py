@@ -9,6 +9,7 @@ import scipy.stats as st
 from prettytable import PrettyTable
 import os
 from copy import deepcopy
+import time
 
 from tills import RegularTill, SelfServiceTill
 
@@ -39,9 +40,11 @@ def get_clients(n: int) -> np.array:
         products = np.array([np.random.randint(1, MAX_PRODUCTS) for j in range(count_cust)])
         products = np.array(products, dtype=float)
         moments = np.array(sorted([np.random.random() for j in range(count_cust)]))
+        wait = np.zeros(count_cust, dtype=float)
         customers = np.append(customers, {'count': count_cust,
                                           'products': products,
-                                          'moments': moments})
+                                          'moments': moments,
+                                          'wait': wait})
 
     return customers
 
@@ -84,33 +87,37 @@ def queuing_strategy(reg_tills: RegularTill, ss_tils: SelfServiceTill) -> tuple:
     return ss_tils, 0
 
 
-def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> tuple:
+def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> float:
     """ Подсчитываем очереди на момент окончания времени (t, ∆ t)
     :param reg_tills: объект общих касс
     :param ss_tills: объект касс самообслуживания
-    :return: среднее время обслуживания
+    :return:
     """
 
-    def sub(tills: RegularTill or SelfServiceTill, index: int) -> tuple:
-        average_time_tmp = 0
-        count_average = 0
+    def sub(tills: RegularTill or SelfServiceTill, index: int) -> float:
+        general_wait = 0
+
         general_intensity = tills.intensity  # Получаем интенсивность кассы
         general_moment = 0
         pops = 0
 
         for i, customer in enumerate(tills.queue[index]):
-            product = customer['products']
-            moment = customer['moments']
-            moment = moment if moment > general_moment else general_moment
-            intensity = general_intensity * (1 - moment)
+            print(i, customer)
+            product = customer['products']                                  # кол-во продуктов у покупателя
+            moment = customer['moments']                                    # момент, в который пришел покупатель
+            if general_moment > moment:
+                general_wait += general_moment - moment
+
+            moment = moment if moment > general_moment else general_moment  # текущий момент
+            intensity = general_intensity * (1 - moment)                    # текущая интенсивность
 
             # если интенсивность больше, чем продуктов у покупателя
             if intensity >= product:
                 pops += 1                                           # счетчик удаления обслуженных клиентов
                 intensity -= product                                # считаем, сколько ещё товаров можем обслужить
                 general_moment = 1 - intensity / general_intensity  # высчитываем, какой сейчас момент времени
-                average_time_tmp += product
-                count_average += 1
+
+                general_wait += general_moment - moment
 
                 # если последний элемент
                 if pops == len(tills.queue[index]):
@@ -118,6 +125,7 @@ def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> tuple:
             # если интенсивности не хватает, чтобы обслужить этого клиента
             else:
                 tills.queue[index][i]['products'] -= intensity
+                general_wait += 1 - customer['moments']
 
         for i, customer in enumerate(tills.queue[index]):
             tills.queue[index][i]['moments'] = 0
@@ -126,21 +134,17 @@ def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> tuple:
         for pop in range(pops - 1, -1, -1):
             tills.queue[index].pop(pop)
 
-        return average_time_tmp, count_average
+        return general_wait
 
-    average_time_tmp = 0
-    count_average = 0
-
+    wait = 0
     for i in range(reg_tills.count):
-        att_tmp, ca_tmp = sub(reg_tills, i)
-        average_time_tmp += att_tmp
-        count_average += ca_tmp
+        print(f'{i + 1} обычная касса')
+        wait += sub(reg_tills, i)
 
-    att_tmp, ca_tmp = sub(ss_tills, 0)
-    average_time_tmp += att_tmp
-    count_average += ca_tmp
+    print('кассы самообслуживания')
+    wait += sub(ss_tills, 0)
 
-    return average_time_tmp, count_average
+    return wait
 
 
 def check_open_close_tills(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> None:
@@ -183,8 +187,7 @@ def main(n: int) -> dict:
     # Получаем входной поток клиентов с их заказами
     customers = get_clients(n)
 
-    average_time = 0
-    count_average = 0
+    wait = 0
     for timeframe in range(len(customers)):
         # Добавляем данные для графиков и таблиц
         open_reg_1.append(regular_tills.tills[0]['open'])
@@ -203,36 +206,51 @@ def main(n: int) -> dict:
         queue_reg_2.append(deepcopy(regular_tills.queue[1]))
         queue_ss.append(deepcopy(selfservice_tills.queue[0]))
 
-        at_tmp, ca_tmp = count(regular_tills, selfservice_tills)
-        average_time += at_tmp
-        count_average += ca_tmp
+        wait = count(regular_tills, selfservice_tills)
 
     return {'times': [i for i in range(len(customers))],
             'products': [customers[timeframe]['products'] for timeframe in range(len(customers))],
             'moments': [customers[timeframe]['moments'] for timeframe in range(len(customers))],
+            'wait': wait,
             'queue_reg_1': queue_reg_1, 'open_reg_1': open_reg_1,
             'queue_reg_2': queue_reg_2, 'open_reg_2': open_reg_2,
-            'queue_ss': queue_ss,
-            'average_time': average_time / count_average}
+            'queue_ss': queue_ss}
 
 
 if __name__ == '__main__':
-    np.random.seed()
+    np.random.seed(123)
 
     LIAMBDA = 3
     MAX_QUEUE = 3
     MAX_PRODUCTS = 8
 
-    # Ввод с отловом ошибок
-    while True:
-        try:
-            n = int(input('Введите количество единиц времени: '))
-            break
-        except ValueError:
-            _cls()
-            print('Вы ввели не число. Попробуйте снова')
+    # # Ввод с отловом ошибок
+    # while True:
+    #     try:
+    #         n = int(input('Введите количество единиц времени: '))
+    #         break
+    #     except ValueError:
+    #         _cls()
+    #         print('Вы ввели не число. Попробуйте снова')
+    # # Ввод с отловом ошибок
+    # while True:
+    #     print_info = input('Показать таблицу и графики (+ да, - нет): ')
+    #     if print_info not in ['+', '-']:
+    #         _cls()
+    #         print('Вы ввели не + или -. Попробуйте снова')
+    #         continue
+    #     if print_info == '+':
+    #         print_info = True
+    #     else:
+    #         print_info = False
+    #     break
+    n = 2
+    print_info = True
+
+    start = time.time()
 
     data = main(n)
+    print(data)
 
     """ --------------------------------------------------Таблица-------------------------------------------------- """
     table = PrettyTable()
@@ -247,7 +265,7 @@ if __name__ == '__main__':
     count_queue_reg_1__products = []  # кол-во продуктов в очереди на 1ую обычную кассу
     count_queue_reg_2__products = []  # кол-во продуктов в очереди на 2ую обычную кассу
     count_queue_ss__products = []     # кол-во продуктов в очереди на кассы самообслуживания
-    for i in range(data['times'][-1] + 1):
+    for i in range(n):
         """ ---------------------------------------------Первая очередь--------------------------------------------- """
 
         queue_reg_1__products = []
@@ -284,12 +302,14 @@ if __name__ == '__main__':
         count_queue_ss__client.append(len(queue_ss__products))
         count_queue_ss__products.append(sum(queue_ss__products))
 
-        table.add_row([f"{data['times'][i]}t", data['products'][i], data['moments'][i],
-                       sum(queue_reg_1__products) + sum(queue_reg_2__products) + sum(queue_ss__products),
-                       f'{sum(queue_reg_1__products)} {queue_reg_1__products}', data['open_reg_1'][i],
-                       f'{sum(queue_reg_2__products)} {queue_reg_2__products}', data['open_reg_2'][i],
-                       f'{sum(queue_ss__products)} {queue_ss__products}'])
-    print(table)
+        if print_info:
+            table.add_row([f"{data['times'][i]}t", data['products'][i], data['moments'][i],
+                           sum(queue_reg_1__products) + sum(queue_reg_2__products) + sum(queue_ss__products),
+                           f'{sum(queue_reg_1__products)} {queue_reg_1__products}', data['open_reg_1'][i],
+                           f'{sum(queue_reg_2__products)} {queue_reg_2__products}', data['open_reg_2'][i],
+                           f'{sum(queue_ss__products)} {queue_ss__products}'])
+    if print_info:
+        print(table)
 
     count_open_req_1 = 0
     count_open_req_2 = 0
@@ -302,8 +322,9 @@ if __name__ == '__main__':
         if data['open_reg_2'][i]:
             count_open_req_2 += 1
 
-    average_time = data['average_time']  # среднее время нахождения человека в очереди
-    average_len = 0.                     # средняя длина очереди
+    # average_time = sum([sum(wait_arr) for wait_arr in data['wait']])  # среднее время нахождения человека в очереди
+    average_time = data['wait'] / n
+    average_len = 0.                                                  # средняя длина очереди
     # count_circle = 0
     for i in range(data['times'][-1] + 1):
         # if data['open_reg_1'][i]:
@@ -321,32 +342,49 @@ if __name__ == '__main__':
     # average_len /= count_circle
     average_len /= (data['times'][-1] + 1) * 3
 
-    text = f'Кол-во промежутков, когда была открыта 1ая обычная касса: {count_open_req_1}\n' + \
-           f'Кол-во промежутков, когда была открыта 2ая обычная касса: {count_open_req_2}\n' + \
-           f'Кол-во промежутков, когда были открыты все обычные кассы: {count_open_req_1_and_2}\n' + \
-           f'Среднее время обслуживания: {average_time}t\n' + \
+    text = f'\n----------------------------------------------Анализ----------------------------------------------\n\n' \
+           f'Кассы:\n' \
+           f'Кол-во промежутков, когда была открыта 1ая обычная касса: {count_open_req_1}\n' \
+           f'Кол-во промежутков, когда была открыта 2ая обычная касса: {count_open_req_2}\n' \
+           f'Кол-во промежутков, когда была открыта одна касса: {count_open_req_1 - count_open_req_1_and_2 + count_open_req_2 - count_open_req_1_and_2}\n' \
+           f'Кол-во промежутков, когда были открыты все обычные кассы: {count_open_req_1_and_2}\n\n' \
+           f'Максимальное кол-во покупателей на кассе:\n' \
+           f'1ая обычная касса: {max(count_queue_reg_1__client)}\n' \
+           f'2ая обычная касса: {max(count_queue_reg_2__client)}\n' \
+           f'Кассы самообслуживания: {max(count_queue_ss__client)}\n\n' \
+           f'Максимальное количество продуктов на кассах:\n' \
+           f'1ая обычная касса: {max(count_queue_reg_1__products)}\n' \
+           f'2ая обычная касса: {max(count_queue_reg_2__products)}\n' \
+           f'Кассы самообслуживания: {max(count_queue_ss__products)}\n\n' \
+           f'Среднее время обслуживания: {average_time}t\n' \
            f'Средняя длина очереди: {average_len}'
     print(text)
 
     """ --------------------------------------------------Графики-------------------------------------------------- """
+    if print_info:
+        x = [i for i in range(data['times'][-1] + 1)]
 
-    x = [i for i in range(data['times'][-1] + 1)]
+        plt.title('Загруженность касс (Кол-во людей)')
+        plt.plot(x, [count_queue_reg_1__client[i] + count_queue_reg_2__client[i] + count_queue_ss__client[i] for i in
+                     range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
+        plt.plot(x, count_queue_reg_1__client, 'b-', label='Очередь первой обычной кассы')
+        plt.plot(x, count_queue_reg_2__client, 'g-', label='Очередь второй обычной кассы')
+        plt.plot(x, count_queue_ss__client, 'y-', label='Очередь касс самообслуживания')
+        plt.legend()
+        plt.show()
 
-    plt.title('Загруженность касс (Кол-во людей)')
-    plt.plot(x, [count_queue_reg_1__client[i] + count_queue_reg_2__client[i] + count_queue_ss__client[i] for i in
-                 range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
-    plt.plot(x, count_queue_reg_1__client, 'b-', label='Очередь первой обычной кассы')
-    plt.plot(x, count_queue_reg_2__client, 'g-', label='Очередь второй обычной кассы')
-    plt.plot(x, count_queue_ss__client, 'y-', label='Очередь касс самообслуживания')
-    plt.legend()
-    plt.show()
+        plt.title('Загруженность касс (Кол-во продуктов)')
+        plt.plot(x, [count_queue_reg_1__products[i] + count_queue_reg_2__products[i] + count_queue_ss__products[i] for i in
+                     range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
+        plt.plot(x, count_queue_reg_1__products, 'b-', label='Очередь первой обычной кассы')
+        plt.plot(x, count_queue_reg_2__products, 'g-', label='Очередь второй обычной кассы')
+        plt.plot(x, count_queue_ss__products, 'y-', label='Очередь касс самообслуживания')
+        plt.legend()
+        plt.show()
 
-    plt.title('Загруженность касс (Кол-во продуктов)')
-    plt.plot(x, [count_queue_reg_1__products[i] + count_queue_reg_2__products[i] + count_queue_ss__products[i] for i in
-                 range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
-    plt.plot(x, count_queue_reg_1__products, 'b-', label='Очередь первой обычной кассы')
-    plt.plot(x, count_queue_reg_2__products, 'g-', label='Очередь второй обычной кассы')
-    plt.plot(x, count_queue_ss__products, 'y-', label='Очередь касс самообслуживания')
-    plt.legend()
-    plt.show()
-
+    second = time.time() - start
+    minute = second // 60
+    second -= 60 * minute
+    hour = minute // 60
+    minute -= 60 * hour
+    print(f'\n\nПрограмма отработала за {int(hour)}ч. {int(minute)}мин. {second}сек.')

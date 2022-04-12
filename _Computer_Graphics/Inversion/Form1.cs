@@ -247,40 +247,65 @@ namespace Inversion
             return source;
         }
 
-        public static Bitmap dilation(Bitmap source, int[,] arr)
+        public static Bitmap dilation(Bitmap source)
         {
-            int size = arr.GetLength(0);
-            int radius = size / 2;
-            Color color;
+            Bitmap image = new Bitmap(source.Width, source.Height);
 
-            for (int y = radius; y < source.Height - radius; y++)
-                for(int x = radius; x < source.Width - radius;x++)
+            int[,] arr = {{ 0, 1, 0 },
+                          { 1, 1, 1 },
+                          { 0, 1, 0 }};
+            int radius = 3;
+            int new_radius = radius / 2;
+            for (int y = 0; y < source.Height; y++)
+                for (int x = 0; x < source.Width; x++)
                 {
-                    byte max = 0;
-                    for (int j = -radius; j <= radius; j++)
-                        for(int i = radius; i <= radius; i++)
+                    Color max = Color.FromArgb(0, 0, 0);
+                    for (int j = -new_radius; j <= new_radius; j++)
+                        for (int i = -new_radius; i <= new_radius; i++)
                         {
-                            color = source.GetPixel(x + i, y + j);
-                            // if ((arr[i, j] == 1) && (color.R + color.G + color.B > max))
-                            // {
-                            //     max = source
-                            // }
+                            Color color = source.GetPixel(Clamp(x + i, 0, source.Width - 1), Clamp(y + j, 0, source.Height - 1));
+                            if ((arr[i + new_radius, j + new_radius] == 1) && (color.R > max.R))
+                                max = color;
                         }
+                    image.SetPixel(x, y, max);
                 }
 
-
-
-            return source;
+            return image;
         }
 
-        public static Bitmap median(Bitmap source, int radius)
+        public static Bitmap erosion(Bitmap source)
         {
-            Bitmap image = new Bitmap(source);
+            Bitmap image = new Bitmap(source.Width, source.Height);
+
+            int[,] arr = {{ 0, 1, 0 },
+                          { 1, 1, 1 },
+                          { 0, 1, 0 }};
+            int radius = 3;
+            int new_radius = radius / 2;
+            for (int y = 0; y < source.Height; y++)
+                for (int x = 0; x < source.Width; x++)
+                {
+                    Color max = Color.FromArgb(255, 255, 255);
+                    for (int j = -new_radius; j <= new_radius; j++)
+                        for (int i = -new_radius; i <= new_radius; i++)
+                        {
+                            Color color = source.GetPixel(Clamp(x + i, 0, source.Width - 1), Clamp(y + j, 0, source.Height - 1));
+                            if ((arr[i + new_radius, j + new_radius] == 1) && (color.R < max.R))
+                                max = color;
+                        }
+                    image.SetPixel(x, y, max);
+                }
+
+            return image;
+        }
+
+        public static Bitmap median(Bitmap source)
+        {
+            /*Bitmap image = new Bitmap(source);
+
             Color color;
-            int elem1;
-            int elem2;
             int tmp;
-            int new_radius = (2 * radius + 1);
+            int new_radius = 2 * radius + 1;
             for (int x = 0; x < source.Width; x++)
                 for (int y = 0; y < source.Height; y++)
                 {
@@ -290,7 +315,7 @@ namespace Inversion
                     for (int i = -radius; i <= radius; i++)
                         for (int j = -radius; j <= radius; j++)
                         {
-                            if ((0 < x + i) && (x + i < source.Width) && (0 < y + j) && (y + j < source.Height))
+                            if ((0 <= x + i) && (x + i < source.Width) && (0 <= y + j) && (y + j < source.Height))
                                 color = source.GetPixel(x + i, y + j);
                             else
                                 color = Color.FromArgb(0, 0, 0);
@@ -298,8 +323,8 @@ namespace Inversion
                             arrG[i + 1 + (j + 1) * radius] = color.G;
                             arrB[i + 1 + (j + 1) * radius] = color.B;
                         }
-                    for (int i = 0; i < 2 * radius + 1; i++)
-                        for (int j = 0; j < 2 * radius + 1; j++)
+                    for (int i = 0; i < new_radius * new_radius - 1; i++)
+                        for (int j = 0; j < new_radius * new_radius - i - 1; j++)
                         {
                             if (arrR[j] > arrR[j + 1])
                             {
@@ -321,17 +346,146 @@ namespace Inversion
                             }
                         }
 
-                    int index = new_radius * new_radius / 2;
+                    int index = new_radius * new_radius / 2 + 1;
                     image.SetPixel(x, y, Color.FromArgb(arrR[index], arrG[index], arrB[index]));
                 }
+
+            return image;*/
+            Bitmap image = new Bitmap(source.Width, source.Height);
+
+            Color tmp;
+            int radius = 1;
+            int new_radius = 2 * radius + 1;
+            for (int y = 0; y < source.Height; y++)
+                for (int x = 0; x < source.Width; x++)
+                {
+                    Color[] arr = new Color[new_radius * new_radius];
+                    for (int j = -radius; j <= radius; j++)
+                        for (int i = -radius; i <= radius; i++)
+                        {
+                            Color color = source.GetPixel(Clamp(x + i, 0, source.Width - 1), Clamp(y + j, 0, source.Height - 1));
+                            arr[i + 1 + (j + 1) * radius] = color;
+                        }
+                    for (int i = 0; i < new_radius * new_radius - 1; i++)
+                        for (int j = 0; j < new_radius * new_radius - i - 1; j++)
+                        {
+                            if (arr[j].R > arr[j + 1].R)
+                            {
+                                tmp = arr[j];
+                                arr[j] = arr[j + 1];
+                                arr[j + 1] = tmp;
+                            }
+                        }
+
+                    image.SetPixel(x, y, Color.FromArgb(arr[4].R, arr[4].G, arr[4].B));
+                }
+
+            return image;
+        }
+
+        public static Bitmap Sobel(Bitmap source)
+        {
+            Bitmap image = new Bitmap(source.Width, source.Height);
+
+            Color oldColor, newColor;
+            float[,] G_y = { { -1, -2, -1 },
+                             { 0, 0, 0 },
+                             { 1, 2, 1 } };
+            float[,] G_x = { { -1, 0, 1 },
+                             { -2, 0, 2 },
+                             { -1, 0, 1 } };
+            int radius = 1;
+            int idX, idY;
+            float ColorXR, ColorXG, ColorXB;
+            float ColorYR, ColorYG, ColorYB;
+            float ColorR, ColorG, ColorB;
+            for (int i = 0; i < source.Width; i++)
+            {
+                for (int j = 0; j < source.Height; j++)
+                {
+                    ColorXR = 0; ColorXG = 0; ColorXB = 0;
+                    ColorYR = 0; ColorYG = 0; ColorYB = 0;
+                    for (int k = -radius; k <= radius; k++)
+                    {
+                        for (int l = -radius; l <= radius; l++)
+                        {
+                            idX = Clamp(i + k, 0, source.Width - 1);
+                            idY = Clamp(j + l, 0, source.Height - 1);
+                            oldColor = source.GetPixel(idX, idY);
+                            ColorXR += G_x[radius + k, radius + l] * oldColor.R;
+                            ColorXG += G_x[radius + k, radius + l] * oldColor.G;
+                            ColorXB += G_x[radius + k, radius + l] * oldColor.B;
+                            ColorYR += G_y[radius + k, radius + l] * oldColor.R;
+                            ColorYG += G_y[radius + k, radius + l] * oldColor.G;
+                            ColorYB += G_y[radius + k, radius + l] * oldColor.B;
+                        }
+                    }
+                    ColorR = (float)Math.Sqrt((ColorXR * ColorXR + ColorYR * ColorYR));
+                    ColorG = (float)Math.Sqrt((ColorXG * ColorXG + ColorYG * ColorYG));
+                    ColorB = (float)Math.Sqrt((ColorXB * ColorXB + ColorYB * ColorYB));
+                    newColor = Color.FromArgb(Clamp((int)ColorR, 0, 255),
+                    Clamp((int)ColorG, 0, 255),
+                    Clamp((int)ColorB, 0, 255));
+                    image.SetPixel(i, j, newColor);
+                }
+            }
+
+            return image;
+        }
+
+        public static Bitmap Sharr(Bitmap source)
+        {
+            Bitmap image = new Bitmap(source.Width, source.Height);
+
+            Color oldColor, newColor;
+            float[,] G_y = { { -3, -10, -3 },
+                             { 0, 0, 0 },
+                             { 3, 10, 3 } };
+            float[,] G_x = { { -3, 0, 3 },
+                             { -10, 0, 10 },
+                             { -3, 0, 3 } };
+            int radius = 1;
+            int idX, idY;
+            float ColorXR, ColorXG, ColorXB;
+            float ColorYR, ColorYG, ColorYB;
+            float ColorR, ColorG, ColorB;
+            for (int i = 0; i < source.Width; i++)
+            {
+                for (int j = 0; j < source.Height; j++)
+                {
+                    ColorXR = 0; ColorXG = 0; ColorXB = 0;
+                    ColorYR = 0; ColorYG = 0; ColorYB = 0;
+                    for (int k = -radius; k <= radius; k++)
+                    {
+                        for (int l = -radius; l <= radius; l++)
+                        {
+                            idX = Clamp(i + k, 0, source.Width - 1);
+                            idY = Clamp(j + l, 0, source.Height - 1);
+                            oldColor = source.GetPixel(idX, idY);
+                            ColorXR += G_x[radius + k, radius + l] * oldColor.R;
+                            ColorXG += G_x[radius + k, radius + l] * oldColor.G;
+                            ColorXB += G_x[radius + k, radius + l] * oldColor.B;
+                            ColorYR += G_y[radius + k, radius + l] * oldColor.R;
+                            ColorYG += G_y[radius + k, radius + l] * oldColor.G;
+                            ColorYB += G_y[radius + k, radius + l] * oldColor.B;
+                        }
+                    }
+                    ColorR = (float)Math.Sqrt((ColorXR * ColorXR + ColorYR * ColorYR));
+                    ColorG = (float)Math.Sqrt((ColorXG * ColorXG + ColorYG * ColorYG));
+                    ColorB = (float)Math.Sqrt((ColorXB * ColorXB + ColorYB * ColorYB));
+                    newColor = Color.FromArgb(Clamp((int)ColorR, 0, 255),
+                    Clamp((int)ColorG, 0, 255),
+                    Clamp((int)ColorB, 0, 255));
+                    image.SetPixel(i, j, newColor);
+                }
+            }
 
             return image;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-
-            Bitmap image = new Bitmap("C:\\Users\\vladk\\Downloads\\n1.png");
+            Bitmap image = new Bitmap("C:\\Users\\vladk\\Downloads\\Telegram Desktop\\1.jpg");
            
             Bitmap source = new Bitmap(image);
 
@@ -357,19 +511,25 @@ namespace Inversion
             //source = perfect_reflector(source);
 
             /* -----------------------------------------------------11 task----------------------------------------------------- */
-            /* не готово */
 
-            int[,] arr = {{ 0, 1, 0 },
-                          { 1, 1, 1 },
-                          { 0, 1, 0 }}; 
-            source = dilation(source, arr);
+            //source = dilation(source);
+
+            /* -----------------------------------------------------12 task----------------------------------------------------- */
+
+            //source = erosion(source);
 
             /* -----------------------------------------------------13 task----------------------------------------------------- */
+            /* не готов */
 
-            int radius = 1;
-            source = median(source, radius);
+            //source = median(source);
 
+            /* -----------------------------------------------------14 task----------------------------------------------------- */
 
+            //source = Sobel(source);
+
+            /* -----------------------------------------------------15 task----------------------------------------------------- */
+
+            source = Sharr(source);
 
             pictureBox1.Image = image;
             pictureBox2.Image = source;
