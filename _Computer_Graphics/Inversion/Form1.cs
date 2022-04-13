@@ -301,83 +301,31 @@ namespace Inversion
 
         public static Bitmap median(Bitmap source)
         {
-            /*Bitmap image = new Bitmap(source);
-
-            Color color;
-            int tmp;
-            int new_radius = 2 * radius + 1;
-            for (int x = 0; x < source.Width; x++)
-                for (int y = 0; y < source.Height; y++)
-                {
-                    int[] arrR = new int[new_radius * new_radius];
-                    int[] arrG = new int[new_radius * new_radius];
-                    int[] arrB = new int[new_radius * new_radius];
-                    for (int i = -radius; i <= radius; i++)
-                        for (int j = -radius; j <= radius; j++)
-                        {
-                            if ((0 <= x + i) && (x + i < source.Width) && (0 <= y + j) && (y + j < source.Height))
-                                color = source.GetPixel(x + i, y + j);
-                            else
-                                color = Color.FromArgb(0, 0, 0);
-                            arrR[i + 1 + (j + 1) * radius] = color.R;
-                            arrG[i + 1 + (j + 1) * radius] = color.G;
-                            arrB[i + 1 + (j + 1) * radius] = color.B;
-                        }
-                    for (int i = 0; i < new_radius * new_radius - 1; i++)
-                        for (int j = 0; j < new_radius * new_radius - i - 1; j++)
-                        {
-                            if (arrR[j] > arrR[j + 1])
-                            {
-                                tmp = arrR[j];
-                                arrR[j] = arrR[j + 1];
-                                arrR[j + 1] = tmp;
-                            }
-                            if (arrG[j] > arrG[j + 1])
-                            {
-                                tmp = arrG[j];
-                                arrG[j] = arrG[j + 1];
-                                arrG[j + 1] = tmp;
-                            }
-                            if (arrB[j] > arrB[j + 1])
-                            {
-                                tmp = arrB[j];
-                                arrB[j] = arrB[j + 1];
-                                arrB[j + 1] = tmp;
-                            }
-                        }
-
-                    int index = new_radius * new_radius / 2 + 1;
-                    image.SetPixel(x, y, Color.FromArgb(arrR[index], arrG[index], arrB[index]));
-                }
-
-            return image;*/
             Bitmap image = new Bitmap(source.Width, source.Height);
 
-            Color tmp;
             int radius = 1;
-            int new_radius = 2 * radius + 1;
+            int new_radius = radius * 2 + 1;
+            int size = new_radius * new_radius;
             for (int y = 0; y < source.Height; y++)
                 for (int x = 0; x < source.Width; x++)
                 {
-                    Color[] arr = new Color[new_radius * new_radius];
+                    int[] arrR = new int[size];
+                    int[] arrG = new int[size];
+                    int[] arrB = new int[size];
                     for (int j = -radius; j <= radius; j++)
                         for (int i = -radius; i <= radius; i++)
                         {
                             Color color = source.GetPixel(Clamp(x + i, 0, source.Width - 1), Clamp(y + j, 0, source.Height - 1));
-                            arr[i + 1 + (j + 1) * radius] = color;
+                            arrR[i + radius + (j + radius) * new_radius] = color.R;
+                            arrG[i + radius + (j + radius) * new_radius] = color.G;
+                            arrB[i + radius + (j + radius) * new_radius] = color.B;
                         }
-                    for (int i = 0; i < new_radius * new_radius - 1; i++)
-                        for (int j = 0; j < new_radius * new_radius - i - 1; j++)
-                        {
-                            if (arr[j].R > arr[j + 1].R)
-                            {
-                                tmp = arr[j];
-                                arr[j] = arr[j + 1];
-                                arr[j + 1] = tmp;
-                            }
-                        }
+                    Array.Sort(arrR);
+                    Array.Sort(arrG);
+                    Array.Sort(arrB);
 
-                    image.SetPixel(x, y, Color.FromArgb(arr[4].R, arr[4].G, arr[4].B));
+                    int med = size / 2;
+                    image.SetPixel(x, y, Color.FromArgb(arrR[med], arrG[med], arrB[med]));
                 }
 
             return image;
@@ -485,8 +433,9 @@ namespace Inversion
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Bitmap image = new Bitmap("C:\\Users\\vladk\\Downloads\\Telegram Desktop\\1.jpg");
-           
+            //Bitmap image = new Bitmap("C:\\Users\\vladk\\Downloads\\Telegram Desktop\\1.jpg");
+            Bitmap image = new Bitmap("C:\\Users\\vladk\\Downloads\\n1.png");
+
             Bitmap source = new Bitmap(image);
 
             /* -----------------------------------------------------6 task----------------------------------------------------- */
@@ -519,9 +468,8 @@ namespace Inversion
             //source = erosion(source);
 
             /* -----------------------------------------------------13 task----------------------------------------------------- */
-            /* не готов */
 
-            //source = median(source);
+            source = median(source);
 
             /* -----------------------------------------------------14 task----------------------------------------------------- */
 
@@ -529,7 +477,7 @@ namespace Inversion
 
             /* -----------------------------------------------------15 task----------------------------------------------------- */
 
-            source = Sharr(source);
+            //source = Sharr(source);
 
             pictureBox1.Image = image;
             pictureBox2.Image = source;

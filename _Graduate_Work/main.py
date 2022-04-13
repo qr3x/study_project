@@ -1,8 +1,19 @@
+""" Эксперимент для n=1, random.seed=123
+1ый закончил в: 0.77310646012446096
+1ый начал в: 0.42310646012446096
+! => его обслужили за: 0.77310646012446096 - 0.42310646012446096 = 0.35
+2ой пришел в: 0.7194689697855631
+! => ждал обслуживание 1ого: 0.77310646012446096 - 0.7194689697855631 = 0.05363749033889786
+!! => после обслуживания первого время ожидания уже: 0.40363749033889786
+
+2ой начал в: 0.77310646012446096
+2ой закончил в: 0.87310646012446096
+! => 2ого обслужили за: 0.87310646012446096 - 0.77310646012446096 = 0.1
+
+!! => общее время ожидания: 0.40363749033889786 + 0.1 = 0.50363749033889786
+!!! среднее время обслуживания: 0.50363749033889786 / 2 = 0.25181874516944893 и это все в t
 """
-1. Средняя время нахождения человека в очереди
-2. Средняя длина очереди
-3. "Поварьировать" переменные по этим исследованиям
-"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
@@ -102,11 +113,8 @@ def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> float:
         pops = 0
 
         for i, customer in enumerate(tills.queue[index]):
-            print(i, customer)
             product = customer['products']                                  # кол-во продуктов у покупателя
             moment = customer['moments']                                    # момент, в который пришел покупатель
-            if general_moment > moment:
-                general_wait += general_moment - moment
 
             moment = moment if moment > general_moment else general_moment  # текущий момент
             intensity = general_intensity * (1 - moment)                    # текущая интенсивность
@@ -118,6 +126,17 @@ def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> float:
                 general_moment = 1 - intensity / general_intensity  # высчитываем, какой сейчас момент времени
 
                 general_wait += general_moment - moment
+                # подсчет, если следующий ждет обслуживания предыдущего
+                for j in range(i + 1, len(tills.queue[index])):
+                    new_customer = tills.queue[index][j]  # следующий покупатель
+                    new_moment = new_customer['moments']  # момент, в который пришел следующий покупатель
+
+                    # если покупатель ждал предыдущего, то считаем время ожидания
+                    if general_moment > new_moment:
+                        general_wait += general_moment - new_moment
+                    # если не ждал, то выходим из цикла, тк следующие его точно не ждали
+                    else:
+                        break
 
                 # если последний элемент
                 if pops == len(tills.queue[index]):
@@ -125,7 +144,8 @@ def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> float:
             # если интенсивности не хватает, чтобы обслужить этого клиента
             else:
                 tills.queue[index][i]['products'] -= intensity
-                general_wait += 1 - customer['moments']
+                for j in range(i + 1, len(tills.queue[index])):
+                    general_wait += 1 - customer['moments']
 
         for i, customer in enumerate(tills.queue[index]):
             tills.queue[index][i]['moments'] = 0
@@ -138,10 +158,8 @@ def count(reg_tills: RegularTill, ss_tills: SelfServiceTill) -> float:
 
     wait = 0
     for i in range(reg_tills.count):
-        print(f'{i + 1} обычная касса')
         wait += sub(reg_tills, i)
 
-    print('кассы самообслуживания')
     wait += sub(ss_tills, 0)
 
     return wait
@@ -224,33 +242,30 @@ if __name__ == '__main__':
     MAX_QUEUE = 3
     MAX_PRODUCTS = 8
 
-    # # Ввод с отловом ошибок
-    # while True:
-    #     try:
-    #         n = int(input('Введите количество единиц времени: '))
-    #         break
-    #     except ValueError:
-    #         _cls()
-    #         print('Вы ввели не число. Попробуйте снова')
-    # # Ввод с отловом ошибок
-    # while True:
-    #     print_info = input('Показать таблицу и графики (+ да, - нет): ')
-    #     if print_info not in ['+', '-']:
-    #         _cls()
-    #         print('Вы ввели не + или -. Попробуйте снова')
-    #         continue
-    #     if print_info == '+':
-    #         print_info = True
-    #     else:
-    #         print_info = False
-    #     break
-    n = 2
-    print_info = True
+    # Ввод с отловом ошибок
+    while True:
+        try:
+            n = int(input('Введите количество единиц времени: '))
+            break
+        except ValueError:
+            _cls()
+            print('Вы ввели не число. Попробуйте снова')
+    # Ввод с отловом ошибок
+    while True:
+        print_info = input('Показать таблицу и графики (+ да, - нет): ')
+        if print_info not in ['+', '-']:
+            _cls()
+            print('Вы ввели не + или -. Попробуйте снова')
+            continue
+        if print_info == '+':
+            print_info = True
+        else:
+            print_info = False
+        break
 
     start = time.time()
 
     data = main(n)
-    print(data)
 
     """ --------------------------------------------------Таблица-------------------------------------------------- """
     table = PrettyTable()
@@ -322,20 +337,9 @@ if __name__ == '__main__':
         if data['open_reg_2'][i]:
             count_open_req_2 += 1
 
-    # average_time = sum([sum(wait_arr) for wait_arr in data['wait']])  # среднее время нахождения человека в очереди
-    average_time = data['wait'] / n
-    average_len = 0.                                                  # средняя длина очереди
-    # count_circle = 0
+    average_time = data['wait'] / sum([len(elem) for elem in data['products']])  # среднее время нахождения человека в очереди
+    average_len = 0.                                                             # средняя длина очереди
     for i in range(data['times'][-1] + 1):
-        # if data['open_reg_1'][i]:
-        #     count_circle += 1
-        #     average_len += count_queue_reg_1__client[i]
-        # if data['open_reg_2'][i]:
-        #     count_circle += 1
-        #     average_len += count_queue_reg_2__client[i]
-        # if count_queue_ss__client[i] != 0:
-        #     count_circle += 1
-        #     average_len += count_queue_ss__client[i]
         average_len += count_queue_reg_1__client[i]
         average_len += count_queue_reg_2__client[i]
         average_len += count_queue_ss__client[i]

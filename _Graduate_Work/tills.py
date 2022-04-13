@@ -71,7 +71,7 @@ class SelfServiceTill(object):
         :param count: количество касс самообслуживания
         """
         self.count = count
-        self.intensity = 20.  # 2 кассы с интенсивность 8
+        self.intensity = 20.  # 2 кассы с интенсивностью 10
 
         self.queue = [[]]
 
