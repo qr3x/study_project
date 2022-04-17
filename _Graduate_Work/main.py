@@ -1,19 +1,3 @@
-""" Эксперимент для n=1, random.seed=123
-1ый закончил в: 0.77310646012446096
-1ый начал в: 0.42310646012446096
-! => его обслужили за: 0.77310646012446096 - 0.42310646012446096 = 0.35
-2ой пришел в: 0.7194689697855631
-! => ждал обслуживание 1ого: 0.77310646012446096 - 0.7194689697855631 = 0.05363749033889786
-!! => после обслуживания первого время ожидания уже: 0.40363749033889786
-
-2ой начал в: 0.77310646012446096
-2ой закончил в: 0.87310646012446096
-! => 2ого обслужили за: 0.87310646012446096 - 0.77310646012446096 = 0.1
-
-!! => общее время ожидания: 0.40363749033889786 + 0.1 = 0.50363749033889786
-!!! среднее время обслуживания: 0.50363749033889786 / 2 = 0.25181874516944893 и это все в t
-"""
-
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
@@ -188,7 +172,7 @@ def check_open_close_tills(reg_tills: RegularTill, ss_tills: SelfServiceTill) ->
             reg_tills.close_till()
 
 
-def main(n: int) -> dict:
+def main(n: int, time_for_tills: int) -> dict:
     """ Сбор для графиков и таблиц """
     queue_reg_1 = []  # Очередь в первую кассу
     queue_reg_2 = []  # Очередь во вторую кассу
@@ -199,8 +183,8 @@ def main(n: int) -> dict:
     """ -------------------------- """
 
     # Создаем объекты касс
-    regular_tills = RegularTill(2)
-    selfservice_tills = SelfServiceTill(2)
+    regular_tills = RegularTill(2, time_for_tills)
+    selfservice_tills = SelfServiceTill(2, time_for_tills)
 
     # Получаем входной поток клиентов с их заказами
     customers = get_clients(n)
@@ -224,7 +208,7 @@ def main(n: int) -> dict:
         queue_reg_2.append(deepcopy(regular_tills.queue[1]))
         queue_ss.append(deepcopy(selfservice_tills.queue[0]))
 
-        wait = count(regular_tills, selfservice_tills)
+        wait += count(regular_tills, selfservice_tills)
 
     return {'times': [i for i in range(len(customers))],
             'products': [customers[timeframe]['products'] for timeframe in range(len(customers))],
@@ -236,21 +220,33 @@ def main(n: int) -> dict:
 
 
 if __name__ == '__main__':
-    np.random.seed(123)
-
-    LIAMBDA = 3
-    MAX_QUEUE = 3
-    MAX_PRODUCTS = 8
+    np.random.seed()
 
     # Ввод с отловом ошибок
     while True:
         try:
             n = int(input('Введите количество единиц времени: '))
+            if n <= 0:
+                _cls()
+                print('Нужно ввести положительное число. Попробуйте снова')
+                continue
             break
         except ValueError:
             _cls()
             print('Вы ввели не число. Попробуйте снова')
-    # Ввод с отловом ошибок
+
+    while True:
+        try:
+            time_for_tills = int(input('Введите кол-во минут в единице времени: '))
+            if time_for_tills <= 0:
+                _cls()
+                print('Нужно ввести положительное число. Попробуйте снова')
+                continue
+            break
+        except ValueError:
+            _cls()
+            print('Нужно ввести целое число. Попробуйте снова')
+
     while True:
         print_info = input('Показать таблицу и графики (+ да, - нет): ')
         if print_info not in ['+', '-']:
@@ -263,9 +259,17 @@ if __name__ == '__main__':
             print_info = False
         break
 
+    """ -------------------------------------------Глобальные параметры------------------------------------------- """
+
+    LIAMBDA = 3 * time_for_tills
+    MAX_QUEUE = 3
+    MAX_PRODUCTS = 8
+
+    """ -------------------------------------------/Глобальные параметры------------------------------------------- """
+
     start = time.time()
 
-    data = main(n)
+    data = main(n, time_for_tills)
 
     """ --------------------------------------------------Таблица-------------------------------------------------- """
     table = PrettyTable()

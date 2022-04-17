@@ -9,13 +9,15 @@ class RegularTill(object):
     queue - очереди для касс
     """
 
-    def __init__(self, max_count: int):
+    def __init__(self, max_count: int, time: int):
         """
         :param max_count: максимальное количество обычных касс
         """
         self.max_count = max_count
         self.count = 0
-        self.intensity = 15.
+        self.coefficient = 1 / 4
+        self.intensity = float(time * 60 * self.coefficient)
+        # self.intensity = 15.
 
         self.tills = []
         for number in range(max_count):
@@ -48,7 +50,9 @@ class RegularTill(object):
                     self.count -= 1
                     till['open'] = False
                     result = 'Закрыли кассу'
-            result = 'Нет касс, которые можно закрыть (На них ещё есть покупатели)'
+                    break
+            else:
+                result = 'Нет касс, которые можно закрыть (На них ещё есть покупатели)'
 
         return result
 
@@ -66,12 +70,14 @@ class SelfServiceTill(object):
     queue - общая очередь для всех касс
     """
 
-    def __init__(self, count: int):
+    def __init__(self, count: int, time: int):
         """
         :param count: количество касс самообслуживания
         """
         self.count = count
-        self.intensity = 20.  # 2 кассы с интенсивностью 10
+        self.coefficient = 1 / 3
+        self.intensity = float(time * 60 * self.coefficient)
+        # self.intensity = 20.  # 2 кассы с интенсивностью 10
 
         self.queue = [[]]
 
