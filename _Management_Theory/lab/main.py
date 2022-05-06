@@ -5,9 +5,10 @@
 Распределение Пуассона:
 P(η(t)=η) = λ^η/η! * exp(-λ)
 """
-from math import exp, factorial, fabs, inf
+from math import exp, factorial, fabs, inf, sqrt, pi
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import integrate
 
 import os
 from prettytable import PrettyTable
@@ -151,56 +152,64 @@ def stage2(N: int, data: list, dict_for_table: dict, liambda: float):
 
     """ --------------------------------------------------График-------------------------------------------------- """
 
-    # Вычисляем точки выборочной функции распределения
-    y_tmp = []
-    x_tmp = []
-    y_tmp_theory = []
-    sum_p = 0
-    for x_i in sorted(dict_for_table):
-        sum_p += dict_for_table[x_i][2]
-        y_tmp.append(round(sum_p, 5))
-        x_tmp.append(x_i)
-    del x_i
-
-    # Вычисляем точки теоритической функции распределения
-    sum_p_theory = 0
-    for i in range(max(x_tmp) + 2):
-        sum_p_theory += P[i]
-        y_tmp_theory.append(sum_p_theory)
-    del sum_p_theory
-
-    # Ищем D
-    y_tmp2 = []
-    for i in range(len(y_tmp_theory) - 1):
-        x_index = 0
-        while i > x_tmp[x_index]:
-            x_index += 1
-            if x_index + 1 == len(x_tmp):
-                break
-        y_tmp2.append(y_tmp[x_index])
-    y_tmp2.append(1.0)
-
-    tmp = []
-    for i in range(len(y_tmp2)):
-        fn_ = y_tmp2[i]
-        fn = y_tmp_theory[i]
-        tmp.append(fabs(fn_ - fn))
-    D = max(tmp)
-
-    print(f'Выборка: {x_tmp}')
-    print(f'Значения по оси Y для выборочной ф. распределения: {y_tmp2}')
-    print(f'Значения по оси Y для теоритической ф. распределения: {y_tmp_theory}')
-    print(f'Массив разности функций распределений: {tmp}')
-
-    length = len(y_tmp2)
-    for i in range(length):
-        if i == 0:
-            plt.plot([0, i], [0, 0], 'b-', label='График выбор Fη(x)')
-            plt.plot([0, i], [0, 0], 'r-', label='График теоритической Fη(x)')
-        plt.plot([i, i + 1], [y_tmp2[i], y_tmp2[i]], 'b-')
-        plt.plot([i, i + 1], [y_tmp_theory[i], y_tmp_theory[i]], 'r-')
-    plt.title(f'Графики Fη(x). D=max|^Fη(x) - Fη(x)| = {D} для x={tmp.index(D)}')
-    plt.legend()
+    # # Вычисляем точки выборочной функции распределения
+    # y_tmp = []
+    # x_tmp = []
+    # y_tmp_theory = []
+    # sum_p = 0
+    # for x_i in sorted(dict_for_table):
+    #     sum_p += dict_for_table[x_i][2]
+    #     y_tmp.append(round(sum_p, 5))
+    #     x_tmp.append(x_i)
+    # del x_i
+    #
+    # # Вычисляем точки теоритической функции распределения
+    # sum_p_theory = 0
+    # for i in range(max(x_tmp) + 2):
+    #     sum_p_theory += P[i]
+    #     y_tmp_theory.append(sum_p_theory)
+    # del sum_p_theory
+    #
+    # # Ищем D
+    # y_tmp2 = []
+    # j = 0
+    # for i in range(len(y_tmp_theory) - 1):
+    #     x_index = 0
+    #     while i > x_tmp[x_index]:
+    #         x_index += 1
+    #         if x_index + 1 == len(x_tmp):
+    #             break
+    #     if i >= x_tmp[0]:
+    #         j += 1
+    #     if j != 0:
+    #         y_tmp2.append(y_tmp[x_index])
+    #     else:
+    #         y_tmp2.append(0.0)
+    # y_tmp2.append(1.0)
+    #
+    # tmp = []
+    # for i in range(len(y_tmp2)):
+    #     fn_ = y_tmp2[i]
+    #     fn = y_tmp_theory[i]
+    #     tmp.append(fabs(fn_ - fn))
+    # D = max(tmp)
+    #
+    # print(f'Выборка: {x_tmp}')
+    # print(f'Значения по оси Y для выборочной ф. распределения: {y_tmp2}')
+    # print(f'Значения по оси Y для теоритической ф. распределения: {y_tmp_theory}')
+    # print(f'Массив разности функций распределений: {tmp}')
+    #
+    # length = len(y_tmp2)
+    # for i in range(length):
+    #     if i == 0:
+    #         plt.plot([0, x_tmp[0]], [0, 0], 'b-', label='График выбор Fη(x)')
+    #         plt.plot([0, 1], [0, 0], 'r-', label='График теоритической Fη(x)')
+    #     else:
+    #         plt.plot([i, i + 1], [y_tmp2[i], y_tmp2[i]], 'b-')
+    #         plt.plot([i, i + 1], [y_tmp_theory[i], y_tmp_theory[i]], 'r-')
+    # # plt.title(f'Графики Fη(x). D=max|^Fη(x) - Fη(x)| = {D} для x={tmp.index(D)}')
+    # plt.title(f'Графики Fη(x). D=max|^Fη(x) - Fη(x)| = {D}')
+    # plt.legend()
     plt.show()
 
     """ --------------------------------------------------Таблицы-------------------------------------------------- """
@@ -234,47 +243,67 @@ def stage2(N: int, data: list, dict_for_table: dict, liambda: float):
     print('max|nj/n - P({η=yj})| =', max([fabs(nj_tmp - pj_tmp) for nj_tmp, pj_tmp in zip(nj_n[1:], pj[1:])]))
 
 
-def stage3(print_info=False) -> None:
+def stage3(n: int, data: dict, a, k ,auto, zs, print_info=False) -> int:
     """
+    :param n: кол-во экспериментов
+    :param data: выборка и инфо о ней [число выборки, кол-во выпадения, вероятность выпадения]
     :param print_info: выводить информацию или нет
     :return: None
     """
     print_title('3 ЭТАП')
 
-    # Ввод k
-    while True:
-        try:
-            k = int(input('Введите количество интервалов: k = '))
-            if k <= 0:
-                _cls()
-                print('k должна быть положительной. Попробуйте снова')
-                continue
-            break
-        except ValueError:
-            _cls()
-            print('Вы ввели не число. Попробуйте снова')
-
-    # Ввод границ z
-    zs = [-inf]
-    for i in range(k - 1):
-        while True:
-            try:
-                z = float(input(f'Введите границу: z_{i + 1} = '))
-                if z <= zs[i]:
-                    _cls()
-                    print(f'Граница z_{i + 1} должна быть больше предыдущей ({zs[i]}). Попробуйте снова')
-                    continue
-                if z == -inf or z == inf:
-                    _cls()
-                    print(f'Граница z_{i + 1} должна быть в интервале (-inf, inf). Попробуйте снова')
-                    continue
-                zs.append(z)
-                break
-            except ValueError:
-                _cls()
-                print('Вы ввели не число. Попробуйте снова')
-    zs.append(inf)
+    # # Ввод границ z
+    # zs = [0]
+    # if auto == '-':
+    #     for i in range(k - 1):
+    #         while True:
+    #             try:
+    #                 z = float(input(f'Введите границу: z_{i + 1} = '))
+    #                 if z <= zs[i]:
+    #                     _cls()
+    #                     print(f'Граница z_{i + 1} должна быть больше предыдущей ({zs[i]}). Попробуйте снова')
+    #                     continue
+    #                 if z == -inf or z == inf:
+    #                     _cls()
+    #                     print(f'Граница z_{i + 1} должна быть в интервале (-inf, inf). Попробуйте снова')
+    #                     continue
+    #                 zs.append(z)
+    #                 break
+    #             except ValueError:
+    #                 _cls()
+    #                 print('Вы ввели не число. Попробуйте снова')
+    # else:
+    #     # Вычисляем точки выборочной функции распределения
+    #     x_tmp = []
+    #     y_tmp_theory = []
+    #     sum_p = 0
+    #     for x_i in sorted(dict_for_table):
+    #         sum_p += dict_for_table[x_i][2]
+    #         x_tmp.append(x_i)
+    #     del x_i
+    #
+    #     # Вычисляем точки теоритической функции распределения
+    #     sum_p_theory = 0
+    #     for i in range(max(x_tmp) + 2):
+    #         sum_p_theory += P[i]
+    #         y_tmp_theory.append(sum_p_theory)
+    #     del sum_p_theory
+    #
+    #     print(x_tmp)
+    #     print(y_tmp_theory)
+    #
+    #     tmp = 1 / k
+    #     intervals = [round(elem * tmp, 6) for elem in range(1, k + 1)]
+    #     del tmp
+    #     j = 0
+    #     for i, elem in enumerate(y_tmp_theory):
+    #         if elem >= intervals[j]:
+    #             j += 1
+    #             zs.append(j)
+    # zs.append(inf)
     print('Границы:', zs)
+
+    """ --------------------------------------------------Таблица-------------------------------------------------- """
 
     qs = []
     for j in range(1, len(zs)):
@@ -301,9 +330,57 @@ def stage3(print_info=False) -> None:
     print(table)
     del intervals
 
+    """ -------------------------------------------------Гипотезы------------------------------------------------- """
+
+    # Находим статистику критерия
+    R0 = 0
+    for i in range(k):
+        nj = 0
+        qj = qs[i]
+        if zs[i + 1] != inf:
+            tmp = zs[i + 1]
+        else:
+            tmp = max(sorted(dict_for_table))
+        for j in range(zs[i], tmp):
+            try:
+                nj += data[j][1]
+                # qj += data[j][2]
+            except KeyError:
+                pass
+        tmp = n * qj
+        try:
+            R0 += (nj - tmp) ** 2 / tmp
+        except ZeroDivisionError:
+            pass
+    del tmp
+
+    def G(x) -> float:
+        if x == 1:
+            return 1.
+        if x == .5:
+            return sqrt(pi)
+
+        return (x - 1) * G(x - 1)
+
+    def fx(x):
+        return 2 ** (- k / 2) * x ** (k / 2 - 1) * exp(-x / 2) * G(k / 2) ** - 1
+
+    F_, err = integrate.quad(fx, 0, R0)
+    F_ = 1 - F_
+
+    print(f'Для:\n'
+          f'a = {a}\n'
+          f'F_(R0) = {F_}')
+    if F_ >= a:
+        print('Принимаем гипотезу')
+        return 1
+    else:
+        print('Не принимаем гипотезу')
+        return 0
+
 
 if __name__ == '__main__':
-    np.random.seed(123)
+    np.random.seed()
 
     # GLOBAL variables
     P = {}
@@ -329,15 +406,82 @@ if __name__ == '__main__':
             _cls()
             print('Вы ввели не число. Попробуйте снова')
 
-    array, dict_for_table = stage1(N, liambda, False)
+    # # Ввод a
+    # while True:
+    #     try:
+    #         a = float(input('Введите уровень значимости: a = '))
+    #         if not (0 <= a < 1):
+    #             _cls()
+    #             print('a должна быть 0 <= a < 1. Попробуйте снова')
+    #             continue
+    #         break
+    #     except ValueError:
+    #         _cls()
+    #         print('Вы ввели не число. Попробуйте снова')
 
-    array.sort()
-    # Сохраняем массив вероятностей, чтобы не высчитывать их каждый раз
-    # for elem in sorted(dict_for_table):
-    #     P[elem] = count_poisson(liambda, elem)
-    for elem in range(max(sorted(dict_for_table)) + 2):
-        P[elem] = count_poisson(liambda, elem)
+    # Ввод k
+    while True:
+        try:
+            k = int(input('Введите количество интервалов: k = '))
+            if k <= 0:
+                _cls()
+                print('k должна быть положительной. Попробуйте снова')
+                continue
+            break
+        except ValueError:
+            _cls()
+            print('Вы ввели не число. Попробуйте снова')
+    auto = input('Автоматический ввод интервалов (+ да, - нет): ')
 
-    stage2(N, array, dict_for_table, liambda)
+    results = []
+    arr_a = [.1, .5, .9]
+    for a in arr_a:
+        result = 0
+        for index in range(10):
+            array, dict_for_table = stage1(N, liambda, False)
 
-    stage3(True)
+            array.sort()
+            # Сохраняем массив вероятностей, чтобы не высчитывать их каждый раз
+            # for elem in sorted(dict_for_table):
+            #     P[elem] = count_poisson(liambda, elem)
+            for elem in range(max(sorted(dict_for_table)) + 2):
+                P[elem] = count_poisson(liambda, elem)
+
+            zs = [0]
+            # Вычисляем точки выборочной функции распределения
+            x_tmp = []
+            y_tmp_theory = []
+            sum_p = 0
+            for x_i in sorted(dict_for_table):
+                sum_p += dict_for_table[x_i][2]
+                x_tmp.append(x_i)
+            del x_i
+
+            # Вычисляем точки теоритической функции распределения
+            sum_p_theory = 0
+            for i in range(max(x_tmp) + 2):
+                sum_p_theory += P[i]
+                y_tmp_theory.append(sum_p_theory)
+            del sum_p_theory
+
+            print(x_tmp)
+            print(y_tmp_theory)
+
+            tmp = 1 / k
+            intervals = [round(elem * tmp, 6) for elem in range(1, k + 1)]
+            del tmp
+            j = 0
+            for i, elem in enumerate(y_tmp_theory):
+                if elem >= intervals[j]:
+                    j += 1
+                    zs.append(j)
+            zs.append(inf)
+
+            stage2(N, array, dict_for_table, liambda)
+
+            result += stage3(N, dict_for_table, a, k, auto, zs, True)
+        results.append(f'Приняли {result} раз для a={a}')
+
+    print_title('РЕЗУЛЬТАТЫ')
+    for elem in results:
+        print(elem)
