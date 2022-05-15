@@ -100,6 +100,7 @@ def stage1(N: int, liambda: float, print_info=False) -> tuple:
         ni_n
     ])
     print(table)
+    print(dict_for_table)
 
     return arr, dict_for_table
 
@@ -243,7 +244,7 @@ def stage2(N: int, data: list, dict_for_table: dict, liambda: float):
     print('max|nj/n - P({η=yj})| =', max([fabs(nj_tmp - pj_tmp) for nj_tmp, pj_tmp in zip(nj_n[1:], pj[1:])]))
 
 
-def stage3(n: int, data: dict, a, k ,auto, zs, print_info=False) -> int:
+def stage3(n: int, data: dict, a, k, auto, print_info=False) -> int:
     """
     :param n: кол-во экспериментов
     :param data: выборка и инфо о ней [число выборки, кол-во выпадения, вероятность выпадения]
@@ -252,55 +253,52 @@ def stage3(n: int, data: dict, a, k ,auto, zs, print_info=False) -> int:
     """
     print_title('3 ЭТАП')
 
-    # # Ввод границ z
-    # zs = [0]
-    # if auto == '-':
-    #     for i in range(k - 1):
-    #         while True:
-    #             try:
-    #                 z = float(input(f'Введите границу: z_{i + 1} = '))
-    #                 if z <= zs[i]:
-    #                     _cls()
-    #                     print(f'Граница z_{i + 1} должна быть больше предыдущей ({zs[i]}). Попробуйте снова')
-    #                     continue
-    #                 if z == -inf or z == inf:
-    #                     _cls()
-    #                     print(f'Граница z_{i + 1} должна быть в интервале (-inf, inf). Попробуйте снова')
-    #                     continue
-    #                 zs.append(z)
-    #                 break
-    #             except ValueError:
-    #                 _cls()
-    #                 print('Вы ввели не число. Попробуйте снова')
-    # else:
-    #     # Вычисляем точки выборочной функции распределения
-    #     x_tmp = []
-    #     y_tmp_theory = []
-    #     sum_p = 0
-    #     for x_i in sorted(dict_for_table):
-    #         sum_p += dict_for_table[x_i][2]
-    #         x_tmp.append(x_i)
-    #     del x_i
-    #
-    #     # Вычисляем точки теоритической функции распределения
-    #     sum_p_theory = 0
-    #     for i in range(max(x_tmp) + 2):
-    #         sum_p_theory += P[i]
-    #         y_tmp_theory.append(sum_p_theory)
-    #     del sum_p_theory
-    #
-    #     print(x_tmp)
-    #     print(y_tmp_theory)
-    #
-    #     tmp = 1 / k
-    #     intervals = [round(elem * tmp, 6) for elem in range(1, k + 1)]
-    #     del tmp
-    #     j = 0
-    #     for i, elem in enumerate(y_tmp_theory):
-    #         if elem >= intervals[j]:
-    #             j += 1
-    #             zs.append(j)
-    # zs.append(inf)
+    # Ввод границ z
+    zs = [0]
+    if auto == '-':
+        for i in range(k - 1):
+            while True:
+                try:
+                    z = float(input(f'Введите границу: z_{i + 1} = '))
+                    if z <= zs[i]:
+                        _cls()
+                        print(f'Граница z_{i + 1} должна быть больше предыдущей ({zs[i]}). Попробуйте снова')
+                        continue
+                    if z == -inf or z == inf:
+                        _cls()
+                        print(f'Граница z_{i + 1} должна быть в интервале (-inf, inf). Попробуйте снова')
+                        continue
+                    zs.append(z)
+                    break
+                except ValueError:
+                    _cls()
+                    print('Вы ввели не число. Попробуйте снова')
+    else:
+        # Вычисляем точки выборочной функции распределения
+        x_tmp = []
+        y_tmp_theory = []
+        sum_p = 0
+        for x_i in sorted(dict_for_table):
+            sum_p += dict_for_table[x_i][2]
+            x_tmp.append(x_i)
+        del x_i
+
+        # Вычисляем точки теоритической функции распределения
+        sum_p_theory = 0
+        for i in range(max(x_tmp) + 2):
+            sum_p_theory += P[i]
+            y_tmp_theory.append(sum_p_theory)
+        del sum_p_theory
+
+        tmp = 1 / k
+        intervals = [round(elem * tmp, 6) for elem in range(1, k + 1)]
+        del tmp
+        j = 0
+        for i, elem in enumerate(y_tmp_theory):
+            if elem >= intervals[j]:
+                j += 1
+                zs.append(i)
+    zs.append(inf)
     print('Границы:', zs)
 
     """ --------------------------------------------------Таблица-------------------------------------------------- """
@@ -332,9 +330,15 @@ def stage3(n: int, data: dict, a, k ,auto, zs, print_info=False) -> int:
 
     """ -------------------------------------------------Гипотезы------------------------------------------------- """
 
+    from pprint import pprint
+    print('need')
+    pprint(qs)
+    pprint(zs)
+    pprint(data)
     # Находим статистику критерия
     R0 = 0
     for i in range(k):
+        print(i)
         nj = 0
         qj = qs[i]
         if zs[i + 1] != inf:
@@ -435,52 +439,54 @@ if __name__ == '__main__':
 
     results = []
     arr_a = [.1, .5, .9]
-    for a in arr_a:
-        result = 0
-        for index in range(10):
-            array, dict_for_table = stage1(N, liambda, False)
+    result = [0, 0, 0]
+    for index in range(10):
+        array, dict_for_table = stage1(N, liambda, False)
 
-            array.sort()
-            # Сохраняем массив вероятностей, чтобы не высчитывать их каждый раз
-            # for elem in sorted(dict_for_table):
-            #     P[elem] = count_poisson(liambda, elem)
-            for elem in range(max(sorted(dict_for_table)) + 2):
-                P[elem] = count_poisson(liambda, elem)
+        array.sort()
+        # Сохраняем массив вероятностей, чтобы не высчитывать их каждый раз
+        # for elem in sorted(dict_for_table):
+        #     P[elem] = count_poisson(liambda, elem)
+        for elem in range(max(sorted(dict_for_table)) + 2):
+            P[elem] = count_poisson(liambda, elem)
 
-            zs = [0]
-            # Вычисляем точки выборочной функции распределения
-            x_tmp = []
-            y_tmp_theory = []
-            sum_p = 0
-            for x_i in sorted(dict_for_table):
-                sum_p += dict_for_table[x_i][2]
-                x_tmp.append(x_i)
-            del x_i
+        # zs = [0]
+        # # Вычисляем точки выборочной функции распределения
+        # x_tmp = []
+        # y_tmp_theory = []
+        # sum_p = 0
+        # for x_i in sorted(dict_for_table):
+        #     sum_p += dict_for_table[x_i][2]
+        #     x_tmp.append(x_i)
+        # del x_i
+        #
+        # # Вычисляем точки теоритической функции распределения
+        # sum_p_theory = 0
+        # for i in range(max(x_tmp) + 2):
+        #     sum_p_theory += P[i]
+        #     y_tmp_theory.append(sum_p_theory)
+        # del sum_p_theory
+        #
+        # print(x_tmp)
+        # print(y_tmp_theory)
+        #
+        # tmp = 1 / k
+        # intervals = [round(elem * tmp, 6) for elem in range(1, k + 1)]
+        # del tmp
+        # j = 0
+        # for i, elem in enumerate(y_tmp_theory):
+        #     if elem >= intervals[j]:
+        #         j += 1
+        #         zs.append(j)
+        # zs.append(inf)
 
-            # Вычисляем точки теоритической функции распределения
-            sum_p_theory = 0
-            for i in range(max(x_tmp) + 2):
-                sum_p_theory += P[i]
-                y_tmp_theory.append(sum_p_theory)
-            del sum_p_theory
+        stage2(N, array, dict_for_table, liambda)
 
-            print(x_tmp)
-            print(y_tmp_theory)
-
-            tmp = 1 / k
-            intervals = [round(elem * tmp, 6) for elem in range(1, k + 1)]
-            del tmp
-            j = 0
-            for i, elem in enumerate(y_tmp_theory):
-                if elem >= intervals[j]:
-                    j += 1
-                    zs.append(j)
-            zs.append(inf)
-
-            stage2(N, array, dict_for_table, liambda)
-
-            result += stage3(N, dict_for_table, a, k, auto, zs, True)
-        results.append(f'Приняли {result} раз для a={a}')
+        result[0] += stage3(N, dict_for_table, arr_a[0], k, auto, True)
+        result[1] += stage3(N, dict_for_table, arr_a[1], k, auto, True)
+        result[2] += stage3(N, dict_for_table, arr_a[2], k, auto, True)
+    for i, a in enumerate(arr_a):
+        results.append(f'Приняли {result[i]} раз для a={a}')
 
     print_title('РЕЗУЛЬТАТЫ')
     for elem in results:
