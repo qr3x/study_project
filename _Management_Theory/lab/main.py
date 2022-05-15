@@ -8,7 +8,7 @@ P(η(t)=η) = λ^η/η! * exp(-λ)
 from math import exp, factorial, fabs, inf, sqrt, pi
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import integrate
+from scipy import integrate, stats
 
 import os
 from prettytable import PrettyTable
@@ -100,7 +100,6 @@ def stage1(N: int, liambda: float, print_info=False) -> tuple:
         ni_n
     ])
     print(table)
-    print(dict_for_table)
 
     return arr, dict_for_table
 
@@ -285,7 +284,7 @@ def stage3(n: int, data: dict, a, k, auto, print_info=False) -> int:
 
         # Вычисляем точки теоритической функции распределения
         sum_p_theory = 0
-        for i in range(max(x_tmp) + 2):
+        for i in range(max(x_tmp) + 50):
             sum_p_theory += P[i]
             y_tmp_theory.append(sum_p_theory)
         del sum_p_theory
@@ -295,9 +294,12 @@ def stage3(n: int, data: dict, a, k, auto, print_info=False) -> int:
         del tmp
         j = 0
         for i, elem in enumerate(y_tmp_theory):
-            if elem >= intervals[j]:
-                j += 1
-                zs.append(i)
+            try:
+                if elem >= intervals[j]:
+                    j += 1
+                    zs.append(i)
+            except IndexError:
+                break
     zs.append(inf)
     print('Границы:', zs)
 
@@ -371,11 +373,16 @@ def stage3(n: int, data: dict, a, k, auto, print_info=False) -> int:
 
     F_, err = integrate.quad(fx, 0, R0)
     F_ = 1 - F_
+    print('NEED-')
+    print(F_)
+
+    F_ = stats.chi2.sf(R0, df=k-1)
+    print(F_)
 
     print(f'Для:\n'
           f'a = {a}\n'
           f'F_(R0) = {F_}')
-    if F_ >= a:
+    if F_ > a:
         print('Принимаем гипотезу')
         return 1
     else:
@@ -440,14 +447,15 @@ if __name__ == '__main__':
     results = []
     arr_a = [.1, .5, .9]
     result = [0, 0, 0]
-    for index in range(10):
+    count_for = 10
+    for index in range(count_for):
         array, dict_for_table = stage1(N, liambda, False)
 
         array.sort()
         # Сохраняем массив вероятностей, чтобы не высчитывать их каждый раз
         # for elem in sorted(dict_for_table):
         #     P[elem] = count_poisson(liambda, elem)
-        for elem in range(max(sorted(dict_for_table)) + 2):
+        for elem in range(max(sorted(dict_for_table)) + 50):
             P[elem] = count_poisson(liambda, elem)
 
         # zs = [0]
@@ -489,5 +497,6 @@ if __name__ == '__main__':
         results.append(f'Приняли {result[i]} раз для a={a}')
 
     print_title('РЕЗУЛЬТАТЫ')
+    print(f'Для {count_for} прогонов:')
     for elem in results:
         print(elem)
