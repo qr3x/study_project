@@ -447,7 +447,7 @@ if __name__ == '__main__':
     results = []
     arr_a = [.1, .5, .9]
     result = [0, 0, 0]
-    count_for = 10
+    count_for = 100
     for index in range(count_for):
         array, dict_for_table = stage1(N, liambda, False)
 
