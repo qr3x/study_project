@@ -1,3 +1,8 @@
+"""
++ 1. Сделать ещё один прогон, но только по коэф. ошибки [.1, .5, 1, 10, 100, 1000]
+2. Сделать графики коэф. эффективности от кол-во минут в одном промежутке
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
@@ -223,8 +228,9 @@ def main(n: int, time_for_tills: int) -> dict:
             'queue_ss': queue_ss}
 
 
-def count_fine(arr: list) -> float:
+def count_fine(coef: float or int, arr: list) -> float:
     """ Считает коэффициент штрафа
+    :param coef: коэффициент ошибки
     :param arr: список с открыта/закрыта касса
     :return: коэффициент ошибки
     """
@@ -233,7 +239,7 @@ def count_fine(arr: list) -> float:
     latest_value = False
     for i, elem in enumerate(arr):
         if elem is True and latest_value is False:
-            fine += .1
+            fine += coef
         latest_value = elem
 
     return fine
@@ -242,184 +248,228 @@ def count_fine(arr: list) -> float:
 if __name__ == '__main__':
     np.random.seed()
 
-    # Ввод с отловом ошибок
-    while True:
-        try:
-            n = int(input('Введите количество единиц времени: '))
-            if n <= 0:
-                _cls()
-                print('Нужно ввести положительное число. Попробуйте снова')
-                continue
-            break
-        except ValueError:
-            _cls()
-            print('Вы ввели не число. Попробуйте снова')
+    # # Ввод с отловом ошибок
+    # while True:
+    #     try:
+    #         n = int(input('Введите количество единиц времени: '))
+    #         if n <= 0:
+    #             _cls()
+    #             print('Нужно ввести положительное число. Попробуйте снова')
+    #             continue
+    #         break
+    #     except ValueError:
+    #         _cls()
+    #         print('Вы ввели не число. Попробуйте снова')
 
-    while True:
-        try:
-            time_for_tills = int(input('Введите кол-во минут в единице времени: '))
-            if time_for_tills <= 0:
-                _cls()
-                print('Нужно ввести положительное число. Попробуйте снова')
-                continue
-            break
-        except ValueError:
-            _cls()
-            print('Нужно ввести целое число. Попробуйте снова')
+    # while True:
+    #     try:
+    #         time_for_tills = float(input('Введите кол-во минут в единице времени: '))
+    #         if time_for_tills <= 0:
+    #             _cls()
+    #             print('Нужно ввести положительное число. Попробуйте снова')
+    #             continue
+    #         break
+    #     except ValueError:
+    #         _cls()
+    #         print('Нужно ввести целое число. Попробуйте снова')
 
-    while True:
-        print_info = input('Показать таблицу и графики (+ да, - нет): ')
-        if print_info not in ['+', '-']:
-            _cls()
-            print('Вы ввели не + или -. Попробуйте снова')
-            continue
-        if print_info == '+':
-            print_info = True
-        else:
-            print_info = False
-        break
-
-    """ -------------------------------------------Глобальные параметры------------------------------------------- """
-
-    LIAMBDA = 3 * time_for_tills
-    MAX_QUEUE = 3
-    MAX_PRODUCTS = 8
-
-    """ -------------------------------------------/Глобальные параметры------------------------------------------- """
+    # while True:
+    #     print_info = input('Показать таблицу и графики (+ да, - нет): ')
+    #     if print_info not in ['+', '-']:
+    #         _cls()
+    #         print('Вы ввели не + или -. Попробуйте снова')
+    #         continue
+    #     if print_info == '+':
+    #         print_info = True
+    #     else:
+    #         print_info = False
+    #     break
 
     start = time.time()
 
-    data = main(n, time_for_tills)
+    const = 10000
+    arr_time_for_tills = np.arange(1, 10, 1)
+    coefs_fine = [.1, .5, 1, 10, 100, 1000]
+    print_info = False
+    data_for_coef = {}
+    for index, coef_fine in enumerate(coefs_fine):
+        data_for_coef[coef_fine] = {}
+        ns = []
+        coefs = []
+        for time_for_tills in arr_time_for_tills:
+            n = int(const // time_for_tills)
+            ns.append(n)
+            """ -------------------------------------------Глобальные параметры------------------------------------------- """
 
-    """ --------------------------------------------------Таблица-------------------------------------------------- """
-    table = PrettyTable()
-    table.field_names = ['t', 'Входной поток', 'Момент, в который пришли', 'Общая очередь',
-                         'Очередь в 1ую обычную кассу', 'Открыта ли 1ая касса',
-                         'Очередь в 2ую обычную кассу', 'Открыта ли 2ая касса',
-                         'Общая очередь в кассы самообслуживания']
+            LIAMBDA = 3 * time_for_tills
+            MAX_QUEUE = 3
+            MAX_PRODUCTS = 8
 
-    count_queue_reg_1__client = []    # кол-во людей в очереди на 1ую обычную кассу
-    count_queue_reg_2__client = []    # кол-во людей в очереди на 2ую обычную кассу
-    count_queue_ss__client = []       # кол-во людей в очереди на кассы самообслуживания
-    count_queue_reg_1__products = []  # кол-во продуктов в очереди на 1ую обычную кассу
-    count_queue_reg_2__products = []  # кол-во продуктов в очереди на 2ую обычную кассу
-    count_queue_ss__products = []     # кол-во продуктов в очереди на кассы самообслуживания
-    for i in range(n):
-        """ ---------------------------------------------Первая очередь--------------------------------------------- """
+            """ -------------------------------------------/Глобальные параметры------------------------------------------- """
 
-        queue_reg_1__products = []
-        for client in data['queue_reg_1'][i]:
-            queue_reg_1__products.append(client['products'])
+            data = main(n, time_for_tills)
 
-        queue_reg_1__moments = []
-        for client in data['queue_reg_1'][i]:
-            queue_reg_1__moments.append(client['moments'])
-        count_queue_reg_1__client.append(len(queue_reg_1__products))
-        count_queue_reg_1__products.append(sum(queue_reg_1__products))
+            """ --------------------------------------------------Таблица-------------------------------------------------- """
+            table = PrettyTable()
+            table.field_names = ['t', 'Входной поток', 'Момент, в который пришли', 'Общая очередь',
+                                 'Очередь в 1ую обычную кассу', 'Открыта ли 1ая касса',
+                                 'Очередь в 2ую обычную кассу', 'Открыта ли 2ая касса',
+                                 'Общая очередь в кассы самообслуживания']
 
-        """ ---------------------------------------------Вторая очередь--------------------------------------------- """
+            count_queue_reg_1__client = []    # кол-во людей в очереди на 1ую обычную кассу
+            count_queue_reg_2__client = []    # кол-во людей в очереди на 2ую обычную кассу
+            count_queue_ss__client = []       # кол-во людей в очереди на кассы самообслуживания
+            count_queue_reg_1__products = []  # кол-во продуктов в очереди на 1ую обычную кассу
+            count_queue_reg_2__products = []  # кол-во продуктов в очереди на 2ую обычную кассу
+            count_queue_ss__products = []     # кол-во продуктов в очереди на кассы самообслуживания
+            for i in range(n):
+                """ ---------------------------------------------Первая очередь--------------------------------------------- """
 
-        queue_reg_2__products = []
-        for client in data['queue_reg_2'][i]:
-            queue_reg_2__products.append(client['products'])
+                queue_reg_1__products = []
+                for client in data['queue_reg_1'][i]:
+                    queue_reg_1__products.append(client['products'])
 
-        queue_reg_2__moments = []
-        for client in data['queue_reg_2'][i]:
-            queue_reg_2__moments.append(client['moments'])
-        count_queue_reg_2__client.append(len(queue_reg_2__products))
-        count_queue_reg_2__products.append(sum(queue_reg_2__products))
+                queue_reg_1__moments = []
+                for client in data['queue_reg_1'][i]:
+                    queue_reg_1__moments.append(client['moments'])
+                count_queue_reg_1__client.append(len(queue_reg_1__products))
+                count_queue_reg_1__products.append(sum(queue_reg_1__products))
 
-        """ ----------------------------------------Очередь самообслуживания---------------------------------------- """
+                """ ---------------------------------------------Вторая очередь--------------------------------------------- """
 
-        queue_ss__products = []
-        for client in data['queue_ss'][i]:
-            queue_ss__products.append(client['products'])
+                queue_reg_2__products = []
+                for client in data['queue_reg_2'][i]:
+                    queue_reg_2__products.append(client['products'])
 
-        queue_ss__moments = []
-        for client in data['queue_ss'][i]:
-            queue_ss__moments.append(client['moments'])
-        count_queue_ss__client.append(len(queue_ss__products))
-        count_queue_ss__products.append(sum(queue_ss__products))
+                queue_reg_2__moments = []
+                for client in data['queue_reg_2'][i]:
+                    queue_reg_2__moments.append(client['moments'])
+                count_queue_reg_2__client.append(len(queue_reg_2__products))
+                count_queue_reg_2__products.append(sum(queue_reg_2__products))
 
-        if print_info:
-            table.add_row([f"{data['times'][i]}t", data['products'][i], data['moments'][i],
-                           sum(queue_reg_1__products) + sum(queue_reg_2__products) + sum(queue_ss__products),
-                           f'{sum(queue_reg_1__products)} {queue_reg_1__products}', data['open_reg_1'][i],
-                           f'{sum(queue_reg_2__products)} {queue_reg_2__products}', data['open_reg_2'][i],
-                           f'{sum(queue_ss__products)} {queue_ss__products}'])
-    if print_info:
+                """ ----------------------------------------Очередь самообслуживания---------------------------------------- """
+
+                queue_ss__products = []
+                for client in data['queue_ss'][i]:
+                    queue_ss__products.append(client['products'])
+
+                queue_ss__moments = []
+                for client in data['queue_ss'][i]:
+                    queue_ss__moments.append(client['moments'])
+                count_queue_ss__client.append(len(queue_ss__products))
+                count_queue_ss__products.append(sum(queue_ss__products))
+
+                if print_info:
+                    table.add_row([f"{data['times'][i]}t", data['products'][i], data['moments'][i],
+                                   sum(queue_reg_1__products) + sum(queue_reg_2__products) + sum(queue_ss__products),
+                                   f'{sum(queue_reg_1__products)} {queue_reg_1__products}', data['open_reg_1'][i],
+                                   f'{sum(queue_reg_2__products)} {queue_reg_2__products}', data['open_reg_2'][i],
+                                   f'{sum(queue_ss__products)} {queue_ss__products}'])
+            if print_info:
+                print(table)
+
+            count_open_req_1 = 0
+            count_open_req_2 = 0
+            count_open_req_1_and_2 = 0
+            for i in range(data['times'][-1] + 1):
+                if data['open_reg_1'][i]:
+                    count_open_req_1 += 1
+                    if data['open_reg_2'][i]:
+                        count_open_req_1_and_2 += 1
+                if data['open_reg_2'][i]:
+                    count_open_req_2 += 1
+
+            # среднее время нахождения человека в очереди
+            average_time = data['wait'] / sum([len(elem) for elem in data['products']]) * time_for_tills
+            # средняя длина очереди
+            average_len = 0.
+            for i in range(data['times'][-1] + 1):
+                average_len += count_queue_reg_1__client[i]
+                average_len += count_queue_reg_2__client[i]
+                average_len += count_queue_ss__client[i]
+            average_len /= (data['times'][-1] + 1) * 3
+
+            fine1 = count_fine(coef_fine, data['open_reg_1'])
+            fine2 = count_fine(coef_fine, data['open_reg_2'])
+            time_for_coef = n * time_for_tills
+            coef = average_time + fine1 / time_for_coef + fine2 / time_for_coef
+            coefs.append(coef)
+
+            text = f'\n----------------------------------------------Анализ----------------------------------------------\n\n' \
+                   f'Кассы:\n' \
+                   f'Кол-во промежутков, когда была открыта 1ая обычная касса: {count_open_req_1}\n' \
+                   f'Кол-во промежутков, когда была открыта 2ая обычная касса: {count_open_req_2}\n' \
+                   f'Кол-во промежутков, когда была открыта одна касса: {count_open_req_1 - count_open_req_1_and_2 + count_open_req_2 - count_open_req_1_and_2}\n' \
+                   f'Кол-во промежутков, когда были открыты все обычные кассы: {count_open_req_1_and_2}\n' \
+                   f'\n' \
+                   f'Максимальное кол-во покупателей на кассе:\n' \
+                   f'1ая обычная касса: {max(count_queue_reg_1__client)}\n' \
+                   f'2ая обычная касса: {max(count_queue_reg_2__client)}\n' \
+                   f'Кассы самообслуживания: {max(count_queue_ss__client)}\n' \
+                   f'\n' \
+                   f'Максимальное количество продуктов на кассах:\n' \
+                   f'1ая обычная касса: {max(count_queue_reg_1__products)}\n' \
+                   f'2ая обычная касса: {max(count_queue_reg_2__products)}\n' \
+                   f'Кассы самообслуживания: {max(count_queue_ss__products)}\n' \
+                   f'\n' \
+                   f'Среднее время обслуживания: {average_time}t\n' \
+                   f'Средняя длина очереди на конец промежутка: {average_len}\n' \
+                   f'\n' \
+                   f'Эффективность (чем меньше, тем лучше): {coef}'
+            print(text)
+
+            """ --------------------------------------------------Графики-------------------------------------------------- """
+            if print_info:
+                x = [i for i in range(data['times'][-1] + 1)]
+
+                plt.title('Загруженность касс (Кол-во людей)')
+                plt.plot(x, [count_queue_reg_1__client[i] + count_queue_reg_2__client[i] + count_queue_ss__client[i] for i in
+                             range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
+                plt.plot(x, count_queue_reg_1__client, 'b-', label='Очередь первой обычной кассы')
+                plt.plot(x, count_queue_reg_2__client, 'g-', label='Очередь второй обычной кассы')
+                plt.plot(x, count_queue_ss__client, 'y-', label='Очередь касс самообслуживания')
+                plt.legend()
+                plt.show()
+
+                plt.title('Загруженность касс (Кол-во продуктов)')
+                plt.plot(x, [count_queue_reg_1__products[i] + count_queue_reg_2__products[i] + count_queue_ss__products[i]
+                             for i in range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
+                plt.plot(x, count_queue_reg_1__products, 'b-', label='Очередь первой обычной кассы')
+                plt.plot(x, count_queue_reg_2__products, 'g-', label='Очередь второй обычной кассы')
+                plt.plot(x, count_queue_ss__products, 'y-', label='Очередь касс самообслуживания')
+                plt.legend()
+                plt.show()
+
+        """ -------------------------------------------Таблица эффективности------------------------------------------- """
+
+        table = PrettyTable()
+        table.title = 'Исходная таблица'
+        table.field_names = ['№', 'Кол-во промежутков t', 'Кол-во минут в одном промежутке', 'Коэффициент эффективности']
+        for i, (time_for_tills, coef, n) in enumerate(zip(arr_time_for_tills, coefs, ns)):
+            table.add_row([i + 1, n, time_for_tills, coef])
         print(table)
 
-    count_open_req_1 = 0
-    count_open_req_2 = 0
-    count_open_req_1_and_2 = 0
-    for i in range(data['times'][-1] + 1):
-        if data['open_reg_1'][i]:
-            count_open_req_1 += 1
-            if data['open_reg_2'][i]:
-                count_open_req_1_and_2 += 1
-        if data['open_reg_2'][i]:
-            count_open_req_2 += 1
+        table.title = 'Отсортированная таблица по коэф. эффективности'
+        print(table.get_string(sortby='Коэффициент эффективности'))
 
-    # среднее время нахождения человека в очереди
-    average_time = data['wait'] / sum([len(elem) for elem in data['products']]) * time_for_tills
-    # средняя длина очереди
-    average_len = 0.
-    for i in range(data['times'][-1] + 1):
-        average_len += count_queue_reg_1__client[i]
-        average_len += count_queue_reg_2__client[i]
-        average_len += count_queue_ss__client[i]
-    average_len /= (data['times'][-1] + 1) * 3
+        """ -------------------------------------------График эффективности------------------------------------------- """
 
-    fine1 = count_fine(data['open_reg_1'])
-    fine2 = count_fine(data['open_reg_2'])
-    time_for_coef = n * time_for_tills
-    coef = average_time + fine1 / time_for_coef + fine2 / time_for_coef
+        rows = table._rows
+        data_for_coef[coef_fine]['x'] = []
+        data_for_coef[coef_fine]['y'] = []
+        for elem in rows:
+            data_for_coef[coef_fine]['x'].append(elem[2])
+            data_for_coef[coef_fine]['y'].append(elem[3])
 
-    text = f'\n----------------------------------------------Анализ----------------------------------------------\n\n' \
-           f'Кассы:\n' \
-           f'Кол-во промежутков, когда была открыта 1ая обычная касса: {count_open_req_1}\n' \
-           f'Кол-во промежутков, когда была открыта 2ая обычная касса: {count_open_req_2}\n' \
-           f'Кол-во промежутков, когда была открыта одна касса: {count_open_req_1 - count_open_req_1_and_2 + count_open_req_2 - count_open_req_1_and_2}\n' \
-           f'Кол-во промежутков, когда были открыты все обычные кассы: {count_open_req_1_and_2}\n' \
-           f'\n' \
-           f'Максимальное кол-во покупателей на кассе:\n' \
-           f'1ая обычная касса: {max(count_queue_reg_1__client)}\n' \
-           f'2ая обычная касса: {max(count_queue_reg_2__client)}\n' \
-           f'Кассы самообслуживания: {max(count_queue_ss__client)}\n' \
-           f'\n' \
-           f'Максимальное количество продуктов на кассах:\n' \
-           f'1ая обычная касса: {max(count_queue_reg_1__products)}\n' \
-           f'2ая обычная касса: {max(count_queue_reg_2__products)}\n' \
-           f'Кассы самообслуживания: {max(count_queue_ss__products)}\n' \
-           f'\n' \
-           f'Среднее время обслуживания: {average_time}t\n' \
-           f'Средняя длина очереди на конец промежутка: {average_len}\n' \
-           f'\n' \
-           f'Эффективность (чем меньше, тем лучше): {coef}'
-    print(text)
-
-    """ --------------------------------------------------Графики-------------------------------------------------- """
-    if print_info:
-        x = [i for i in range(data['times'][-1] + 1)]
-
-        plt.title('Загруженность касс (Кол-во людей)')
-        plt.plot(x, [count_queue_reg_1__client[i] + count_queue_reg_2__client[i] + count_queue_ss__client[i] for i in
-                     range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
-        plt.plot(x, count_queue_reg_1__client, 'b-', label='Очередь первой обычной кассы')
-        plt.plot(x, count_queue_reg_2__client, 'g-', label='Очередь второй обычной кассы')
-        plt.plot(x, count_queue_ss__client, 'y-', label='Очередь касс самообслуживания')
-        plt.legend()
-        plt.show()
-
-        plt.title('Загруженность касс (Кол-во продуктов)')
-        plt.plot(x, [count_queue_reg_1__products[i] + count_queue_reg_2__products[i] + count_queue_ss__products[i]
-                     for i in range(data['times'][-1] + 1)], 'r-', label='Общая очередь')
-        plt.plot(x, count_queue_reg_1__products, 'b-', label='Очередь первой обычной кассы')
-        plt.plot(x, count_queue_reg_2__products, 'g-', label='Очередь второй обычной кассы')
-        plt.plot(x, count_queue_ss__products, 'y-', label='Очередь касс самообслуживания')
-        plt.legend()
-        plt.show()
+    # plt.title = f'График эффективности'
+    # plt.xlabel('Эффективность (меньше=лучше)')
+    # plt.ylabel('Кол-во минут в промежутке')
+    # for elem in data_for_coef.keys():
+    #     x = data_for_coef[elem]['x']
+    #     y = data_for_coef[elem]['y']
+    #     plt.plot(x, y, label=f'График для коэф.ошибки={elem}')
+    # plt.legend()
+    # plt.show()
 
     """ -------------------------------------------Время работы программы------------------------------------------- """
 
