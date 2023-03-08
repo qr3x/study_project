@@ -287,10 +287,10 @@ if __name__ == '__main__':
 
     start = time.time()
 
-    const = 10000
+    const = 100
     arr_time_for_tills = np.arange(1, 10, 1)
     coefs_fine = [.1, .5, 1, 10, 100, 1000]
-    print_info = False
+    print_info = True
     data_for_coef = {}
     for index, coef_fine in enumerate(coefs_fine):
         data_for_coef[coef_fine] = {}
@@ -461,15 +461,15 @@ if __name__ == '__main__':
             data_for_coef[coef_fine]['x'].append(elem[2])
             data_for_coef[coef_fine]['y'].append(elem[3])
 
-    # plt.title = f'График эффективности'
-    # plt.xlabel('Эффективность (меньше=лучше)')
-    # plt.ylabel('Кол-во минут в промежутке')
-    # for elem in data_for_coef.keys():
-    #     x = data_for_coef[elem]['x']
-    #     y = data_for_coef[elem]['y']
-    #     plt.plot(x, y, label=f'График для коэф.ошибки={elem}')
-    # plt.legend()
-    # plt.show()
+    plt.title = f'График эффективности'
+    plt.xlabel('Эффективность (меньше=лучше)')
+    plt.ylabel('Кол-во минут в промежутке')
+    for elem in data_for_coef.keys():
+        x = data_for_coef[elem]['x']
+        y = data_for_coef[elem]['y']
+        plt.plot(x, y, label=f'График для коэф.ошибки={elem}')
+    plt.legend()
+    plt.show()
 
     """ -------------------------------------------Время работы программы------------------------------------------- """
 

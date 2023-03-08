@@ -1,0 +1,11 @@
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\bin\Debug\lab1.exe.config
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\bin\Debug\lab1.exe
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\bin\Debug\lab1.pdb
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\obj\Debug\lab1.csproj.AssemblyReference.cache
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\obj\Debug\lab1.csproj.SuggestedBindingRedirects.cache
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\obj\Debug\lab1.Form1.resources
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\obj\Debug\lab1.Properties.Resources.resources
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\obj\Debug\lab1.csproj.GenerateResource.cache
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\obj\Debug\lab1.csproj.CoreCompileInputs.cache
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\obj\Debug\lab1.exe
+D:\programming\study\study_project\_Computer_Graphics\2023\Lab1\lab1\obj\Debug\lab1.pdb
