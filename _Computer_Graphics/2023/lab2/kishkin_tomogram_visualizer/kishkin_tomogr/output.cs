@@ -104,42 +104,6 @@ namespace kishkin_tomogr_output
                     }
                     GL.End();
                 }
-                /*GL.Begin(BeginMode.QuadStrip);
-                for (int x_coord = 0; x_coord < Bin.X - 1; x_coord++)
-                {
-                    Color color0, color1;
-                    short value;
-                    // 1ая вершина
-                    value = Bin.array[x_coord + layerNumber * Bin.X * Bin.Y];
-                    color0 = TransferFunction(value, minTF, widthTF);
-
-                    // 2ая вершина
-                    value = Bin.array[x_coord + Bin.X + layerNumber * Bin.X * Bin.Y];
-                    color1 = TransferFunction(value, minTF, widthTF);
-
-                    for (int y_coord = 0; y_coord < Bin.Y - 1; y_coord++)
-                    {
-                        // 1ая вершина
-                        GL.Color3(color0);
-                        GL.Vertex2(x_coord, y_coord);
-
-                        // 2ая вершина
-                        GL.Color3(color1);
-                        GL.Vertex2(x_coord, y_coord + 1);
-
-                        // 3ья вершина
-                        value = Bin.array[x_coord + 1 + (y_coord + 1) * Bin.X + layerNumber * Bin.X * Bin.Y];
-                        color0 = TransferFunction(value, minTF, widthTF);
-                        GL.Color3(color0);
-                        GL.Vertex2(x_coord + 1, y_coord + 1);
-
-                        // 4ая вершина
-                        value = Bin.array[x_coord + 1 + y_coord * Bin.X + layerNumber * Bin.X * Bin.Y];
-                        color1 = TransferFunction(value, minTF, widthTF);
-                        GL.Color3(color1);
-                        GL.Vertex2(x_coord + 1, y_coord);
-                    }
-                }*/
             }
             GL.End();
         }
