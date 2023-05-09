@@ -70,13 +70,13 @@ namespace kishkin_tomogr
                         needReload = false;
                     }
                     view.drawTexture();
-                } else
+                } 
+                else
                 {
                     /* Для визуализации томограммы с помощью отрисовки четырехугольников, 
                        вершинами которых являеются центры вокселов текущего слоя регулярной воксельной сетки. 
                        Цвет формируется на центральном процессоре и отрисовывается с помощью функции GL.Benig(BeginMode.Quads) */
-                    view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value);
-                    glControl1.SwapBuffers();
+                    view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked);
                 }
                 glControl1.SwapBuffers();
             }
@@ -89,9 +89,10 @@ namespace kishkin_tomogr
 
             if (checkBox1.Checked == false)
             {
-                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value);
+                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked);
                 glControl1.SwapBuffers();
             }
+            label1.Text = String.Format("Текущий слой={0}", currentLayer + 1);
         }
 
         void Application_Idle(object sender, EventArgs e)
@@ -114,9 +115,41 @@ namespace kishkin_tomogr
             FrameCount++;
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
 
+        private void trackBar2_Scroll(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                view.generateTextureImage(currentLayer, trackBar2.Value, trackBar3.Value);
+                view.Load2DTexture();
+                needReload = false;
+                view.drawTexture();
+            }
+            else
+            {
+                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked);
+            }
+            glControl1.SwapBuffers();
+
+            label2.Text = String.Format("Значение\nминимума={0}", trackBar2.Value);
+        }
+
+        private void trackBar3_Scroll(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                view.generateTextureImage(currentLayer, trackBar2.Value, trackBar3.Value);
+                view.Load2DTexture();
+                needReload = false;
+                view.drawTexture();
+            }
+            else
+            {
+                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked);
+            }
+            glControl1.SwapBuffers();
+
+            label3.Text = String.Format("Ширина TF={0}", trackBar3.Value);
         }
     }
 }
