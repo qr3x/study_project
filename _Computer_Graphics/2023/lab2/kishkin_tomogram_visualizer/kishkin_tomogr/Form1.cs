@@ -49,7 +49,8 @@ namespace kishkin_tomogr
                 loaded = true;
                 glControl1.Invalidate();
 
-                trackBar1.Maximum = Bin.Z - 1;
+                // trackBar1.Maximum = Bin.Z - 1;
+                trackBar1.Maximum = Bin.X - 2;
             }
         }
 
