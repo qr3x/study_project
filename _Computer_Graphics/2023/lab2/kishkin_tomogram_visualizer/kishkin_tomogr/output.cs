@@ -26,7 +26,14 @@ namespace kishkin_tomogr_output
             GL.ShadeModel(ShadingModel.Smooth);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
-            GL.Ortho(0, Bin.X, 0, Bin.Y, -1, 1);
+            /*if (isFromChest == true)
+            {
+                GL.Ortho(0, Bin.X, 0, Bin.Y, -1, 1);
+            }
+            else
+            {*/
+                GL.Ortho(0, Bin.Y, 0, Bin.Z, -1, 1);
+            /*}*/
             GL.Viewport(0, 0, width, height);
         }
 
@@ -47,37 +54,68 @@ namespace kishkin_tomogr_output
             return value;
         }
 
-        public void DrawQuards(int layerNumber, int minTF, int widthTF, bool isQuads)
+        public void DrawQuards(int layerNumber, int minTF, int widthTF, bool isQuads, bool isFromChest)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             if (isQuads)
             {
-                GL.Begin(BeginMode.Quads);
-                for (int x_coord = 0; x_coord < Bin.X - 1; x_coord++)
+                if (isFromChest)
+                {
+                    GL.Begin(BeginMode.Quads);
                     for (int y_coord = 0; y_coord < Bin.Y - 1; y_coord++)
-                    {
-                        short value;
+                        for (int z_coord = 0; z_coord < Bin.Z - 1; z_coord++)
+                        {
+                            short value;
 
-                        // 1ая вершина
-                        value = Bin.array[x_coord + y_coord * Bin.X + layerNumber * Bin.X * Bin.Y];
-                        GL.Color3(TransferFunction(value, minTF, widthTF));
-                        GL.Vertex2(x_coord, y_coord);
+                            //1 вершина
+                            value = Bin.array[y_coord + layerNumber * Bin.Y + z_coord * Bin.Y * Bin.X];
+                            GL.Color3(TransferFunction(value, minTF, widthTF));
+                            GL.Vertex2(y_coord, z_coord);
+                            //2 вершина
+                            value = Bin.array[y_coord + 1 + layerNumber * Bin.Y + (z_coord) * Bin.Y * Bin.X];
+                            GL.Color3(TransferFunction(value, minTF, widthTF));
+                            GL.Vertex2(y_coord, z_coord + 1);
+                            //3 вершина
+                            value = Bin.array[y_coord + 1 + layerNumber * Bin.Y + (z_coord + 1) * Bin.Y * Bin.X];
+                            GL.Color3(TransferFunction(value, minTF, widthTF));
+                            GL.Vertex2(y_coord + 1, z_coord + 1);
+                            //4 вершина
+                            value = Bin.array[y_coord + 1 + layerNumber * Bin.Y + z_coord * Bin.Y * Bin.X];
+                            GL.Color3(TransferFunction(value, minTF, widthTF));
+                            GL.Vertex2(y_coord + 1, z_coord);
 
-                        // 2ая вершина
-                        value = Bin.array[x_coord + (y_coord + 1) * Bin.X + layerNumber * Bin.X * Bin.Y];
-                        GL.Color3(TransferFunction(value, minTF, widthTF));
-                        GL.Vertex2(x_coord, y_coord + 1);
+                        }
+                    GL.End();
+                } else
+                {
+                    GL.Begin(BeginMode.Quads);
+                    for (int x_coord = 0; x_coord < Bin.X - 1; x_coord++)
+                        for (int y_coord = 0; y_coord < Bin.Y - 1; y_coord++)
+                        {
+                            short value;
 
-                        // 3ья вершина
-                        value = Bin.array[x_coord + 1 + (y_coord + 1) * Bin.X + layerNumber * Bin.X * Bin.Y];
-                        GL.Color3(TransferFunction(value, minTF, widthTF));
-                        GL.Vertex2(x_coord + 1, y_coord + 1);
+                            // 1ая вершина
+                            value = Bin.array[x_coord + y_coord * Bin.X + layerNumber * Bin.X * Bin.Y];
+                            GL.Color3(TransferFunction(value, minTF, widthTF));
+                            GL.Vertex2(x_coord, y_coord);
 
-                        // 4ая вершина
-                        value = Bin.array[x_coord + 1 + y_coord * Bin.X + layerNumber * Bin.X * Bin.Y];
-                        GL.Color3(TransferFunction(value, minTF, widthTF));
-                        GL.Vertex2(x_coord + 1, y_coord);
-                    }
+                            // 2ая вершина
+                            value = Bin.array[x_coord + (y_coord + 1) * Bin.X + layerNumber * Bin.X * Bin.Y];
+                            GL.Color3(TransferFunction(value, minTF, widthTF));
+                            GL.Vertex2(x_coord, y_coord + 1);
+
+                            // 3ья вершина
+                            value = Bin.array[x_coord + 1 + (y_coord + 1) * Bin.X + layerNumber * Bin.X * Bin.Y];
+                            GL.Color3(TransferFunction(value, minTF, widthTF));
+                            GL.Vertex2(x_coord + 1, y_coord + 1);
+
+                            // 4ая вершина
+                            value = Bin.array[x_coord + 1 + y_coord * Bin.X + layerNumber * Bin.X * Bin.Y];
+                            GL.Color3(TransferFunction(value, minTF, widthTF));
+                            GL.Vertex2(x_coord + 1, y_coord);
+                        }
+                    GL.End();
+                }
             }
             else
             {
@@ -105,7 +143,6 @@ namespace kishkin_tomogr_output
                     GL.End();
                 }
             }
-            GL.End();
         }
 
         public void Load2DTexture()

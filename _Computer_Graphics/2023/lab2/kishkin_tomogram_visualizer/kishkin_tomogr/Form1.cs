@@ -21,7 +21,7 @@ namespace kishkin_tomogr
         bool loaded = false;
         Bin bin = new Bin();
         kishkin_tomogr_output.View view = new kishkin_tomogr_output.View();
-        int currentLayer;
+        int currentLayer = 0;
 
         int FrameCount;
         DateTime NextFPSUpdate = DateTime.Now.AddSeconds(1);
@@ -49,7 +49,7 @@ namespace kishkin_tomogr
                 loaded = true;
                 glControl1.Invalidate();
 
-                trackBar1.Maximum = bin.getZ() - 1;
+                trackBar1.Maximum = Bin.Z - 1;
             }
         }
 
@@ -76,7 +76,7 @@ namespace kishkin_tomogr
                     /* Для визуализации томограммы с помощью отрисовки четырехугольников, 
                        вершинами которых являеются центры вокселов текущего слоя регулярной воксельной сетки. 
                        Цвет формируется на центральном процессоре и отрисовывается с помощью функции GL.Benig(BeginMode.Quads) */
-                    view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked);
+                    view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked, checkBox3.Checked);
                 }
                 glControl1.SwapBuffers();
             }
@@ -89,7 +89,7 @@ namespace kishkin_tomogr
 
             if (checkBox1.Checked == false)
             {
-                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked);
+                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked, checkBox3.Checked);
                 glControl1.SwapBuffers();
             }
             label1.Text = String.Format("Текущий слой={0}", currentLayer + 1);
@@ -127,7 +127,7 @@ namespace kishkin_tomogr
             }
             else
             {
-                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked);
+                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked, checkBox3.Checked);
             }
             glControl1.SwapBuffers();
 
@@ -145,11 +145,25 @@ namespace kishkin_tomogr
             }
             else
             {
-                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked);
+                view.DrawQuards(currentLayer, trackBar2.Value, trackBar3.Value, !checkBox2.Checked, checkBox3.Checked);
             }
             glControl1.SwapBuffers();
 
             label3.Text = String.Format("Ширина TF={0}", trackBar3.Value);
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox3.Checked == true)
+            {
+                trackBar1.Maximum = Bin.X - 2;
+            } else
+            {
+                trackBar1.Maximum = Bin.Z - 1;
+            }
+            view.SetupView(glControl1.Width, glControl1.Height);
+            loaded = true;
+            glControl1.Invalidate();
         }
     }
 }

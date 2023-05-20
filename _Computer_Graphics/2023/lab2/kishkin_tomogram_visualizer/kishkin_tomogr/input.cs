@@ -33,9 +33,18 @@ namespace kishkin_tomogr_input
             }
         }
 
-        public int getZ()
+        /*public void rotateTomogram(Boolean isRotate)
         {
-            return Z;
-        }
+            if (isRotate)
+            {
+                Int32 tmpX = Z, tmpY = X, tmpZ = Y;
+                X = tmpX; Y = tmpY; Z = tmpZ;
+            }
+            else
+            {
+                Int32 tmpX = Y, tmpY = Z, tmpZ = X;
+                X = tmpX; Y = tmpY; Z = tmpZ;
+            }
+        }*/
     }
 }
